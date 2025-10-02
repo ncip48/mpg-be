@@ -49,13 +49,15 @@ class ProfileSerializer(BaseModelSerializer):
         modules = set(p.split('.')[0] for p in permissions)
         return sorted(list(modules))
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(BaseModelSerializer):
     """
     Serializer for User management by superusers.
     Handles CRUD for users and assignment of roles.
     """
-    roles = serializers.PrimaryKeyRelatedField(
+    # Accept roles as a list of subids (assume subid is a unique field on Role)
+    roles = serializers.SlugRelatedField(
         many=True,
+        slug_field='subid',
         queryset=Role.objects.all(),
         required=False
     )
@@ -63,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser', 'roles', 'password']
+        fields = ['pk', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser', 'roles', 'password']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
