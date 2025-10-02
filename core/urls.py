@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from django.conf.urls.static import static
 
 from core import settings
 
@@ -51,3 +52,8 @@ urlpatterns = [
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
+    
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# if settings.DEBUG:
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
