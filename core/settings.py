@@ -61,11 +61,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     
-    "drf_yasg",  # Added for Swagger UI
+    "drf_yasg",
     
     "debug_toolbar",
     
+    # Main Services
     "services.account",
+    "services.printer",
 ]
 
 MIDDLEWARE = [
