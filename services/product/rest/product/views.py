@@ -26,7 +26,7 @@ class ProductViewSet(BaseViewSet):
     Accessible only by superusers.
     """
     my_tags = ["Products"]
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().select_related('store', 'printer')
     serializer_class = ProductSerializer
     lookup_field = "subid"
     search_fields = ["name","sku","store__name","printer__name"]
