@@ -9,4 +9,9 @@ router.register(r'printers', PrinterViewSet, basename='printer')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path(
+        "autocomplete/",
+        PrinterViewSet.as_view({"get": "autocomplete"}),
+        name="autocomplete"
+    ),
 ]

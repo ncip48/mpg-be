@@ -35,3 +35,17 @@ class BaseViewSet(viewsets.ModelViewSet):
     
     # ✅ Pagination
     pagination_class = PageNumberPagination
+    
+    serializer_map = None
+
+    def get_serializer_class(self):
+        serializer = None
+        if self.serializer_map is not None:
+            serializer = self.serializer_map.get(self.action, None)
+
+        if serializer is None:
+            serializer = super().get_serializer_class()
+        return serializer
+    
+    def autocomplete(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

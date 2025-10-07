@@ -31,3 +31,6 @@ class PrinterViewSet(BaseViewSet):
         "printer.view_printer",
     ]
     my_tags = ["Printers"]
+    serializer_map = {
+        "autocomplete": PrinterSerializer,
+    }

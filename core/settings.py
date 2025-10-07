@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "services.account",
     "services.printer",
     "services.store",
+    "services.product",
 ]
 
 MIDDLEWARE = [

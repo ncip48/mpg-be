@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 import logging
 from core.common.viewsets import BaseViewSet
 from services.account.models import Role
-from services.account.rest.role.serializers import RoleSerializer
+from services.account.rest.role.serializers import RoleSerializer, RoleSerializerSimple
 
 if TYPE_CHECKING:
     pass
@@ -20,6 +20,7 @@ class RoleViewSet(BaseViewSet):
     A viewset for viewing and editing roles.
     Accessible only by superusers.
     """
+    my_tags = ["Roles"]
     queryset = Role.objects.all().prefetch_related('permissions')
     serializer_class = RoleSerializer
     lookup_field = "subid"
@@ -30,4 +31,6 @@ class RoleViewSet(BaseViewSet):
         "account.delete_role",
         "account.view_role",
     ]
-    my_tags = ["Roles"]
+    serializer_map = {
+        "autocomplete": RoleSerializerSimple,
+    }

@@ -22,6 +22,7 @@ class StoreViewSet(BaseViewSet):
     A viewset for viewing and editing stores.
     Accessible only by superusers.
     """
+    my_tags = ["Stores"]
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
     lookup_field = "subid"
@@ -32,4 +33,6 @@ class StoreViewSet(BaseViewSet):
         "store.delete_store",
         "store.view_store",
     ]
-    my_tags = ["Stores"]
+    serializer_map = {
+        "autocomplete": StoreSerializer,
+    }

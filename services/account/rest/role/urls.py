@@ -9,4 +9,9 @@ router.register(r'roles', RoleViewSet, basename='role')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path(
+        "autocomplete/",
+        RoleViewSet.as_view({"get": "autocomplete"}),
+        name="autocomplete"
+    ),
 ]
