@@ -43,6 +43,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('services.account.rest.urls')),
     path('api/', include('services.printer.rest.urls')),
+    path('api/', include('services.store.rest.urls')),
     
     # Swagger UI routes
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
