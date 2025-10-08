@@ -40,6 +40,13 @@ class Customer(get_subid_model()):
         ("marketplace", "Marketplace"),
     ]
     
+    identity = models.CharField(
+        max_length=15,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text=_("Auto-generated customer code, e.g., CUSTK-0001"),
+    )
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=50)
     address = models.TextField()
@@ -58,4 +65,42 @@ class Customer(get_subid_model()):
         verbose_name_plural = _("customers")
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.identity or ''} - {self.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.identity:
+            prefix = "CUSTK" if self.source == "konveksi" else "CUSTM"
+
+            # Find the highest code for this source
+            latest = (
+                Customer.objects.filter(source=self.source, identity__startswith=prefix)
+                .aggregate(max_code=models.Max("identity"))
+                .get("max_code")
+            )
+
+            # Determine next number
+            if latest:
+                # Extract numeric + optional suffix parts
+                import re
+
+                match = re.match(rf"{prefix}-(\d{{4}})([A-Z]?)", latest)
+                if match:
+                    num_part = int(match.group(1))
+                    suffix = match.group(2) or ""
+
+                    if num_part < 9999:
+                        num_part += 1
+                    else:
+                        num_part = 1
+                        suffix = chr(ord(suffix) + 1) if suffix else "A"
+                else:
+                    num_part = 1
+                    suffix = ""
+            else:
+                num_part = 1
+                suffix = ""
+
+            # Generate final ID
+            self.identity = f"{prefix}-{num_part:04d}{suffix}"
+
+        super().save(*args, **kwargs)

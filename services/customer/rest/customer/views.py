@@ -25,7 +25,7 @@ class CustomerViewSet(BaseViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     lookup_field = "subid"
-    search_fields = ["name", "phone", "address"]
+    search_fields = ["name", "phone", "address", "identity"]
     filterset_fields = ["source"]
     required_perms = [
         "customer.add_customer",

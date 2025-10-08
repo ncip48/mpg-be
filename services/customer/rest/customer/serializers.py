@@ -23,7 +23,10 @@ class CustomerSerializer(BaseModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ['pk', 'name', 'phone', 'address', 'source']
+        fields = ['pk', 'identity', 'name', 'phone', 'address', 'source']
+        extra_kwargs = {
+            'identity': {'read_only': True},
+        }
 
 class CustomerSerializerSimple(BaseModelSerializer):
     """
