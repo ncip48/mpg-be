@@ -57,4 +57,4 @@ class ProductPriceTier(get_subid_model()):
         unique_together = ("product", "variant_type", "min_qty", "max_qty")
 
     def __str__(self):
-        return f"{self.product.name} - {self.variant_type.code} ({self.min_qty}-{self.max_qty or '∞'})"
+        return f"{self.product.name} - {self.variant_type.code if self.variant_type else "(std)"} ({self.min_qty}-{self.max_qty or '∞'})"
