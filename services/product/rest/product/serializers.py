@@ -6,10 +6,12 @@ import logging
 from core.common.serializers import BaseModelSerializer
 from services.printer.models.printer import Printer
 from services.printer.rest.printer.serializers import PrinterSerializer
+from services.product.models.fabric_price import FabricPrice
 from services.product.models.fabric_type import FabricType
 from services.product.models.price_adjustment import ProductPriceAdjustment
 from services.product.models.price_tier import ProductPriceTier
 from services.product.models.product import Product
+from services.product.models.variant_type import ProductVariantType
 from services.store.models.store import Store
 from services.store.rest.store.serializers import StoreSerializer
 from drf_yasg import openapi
@@ -27,30 +29,69 @@ __all__ = (
     "ProductSerializerSimple",
 )
 
-class ProductPriceAdjustmentNestedSerializer(serializers.ModelSerializer):
-    fabric_type = serializers.PrimaryKeyRelatedField(queryset=FabricType.objects.all())
+# --- Nested serializers ----------------------------------------------------
+
+class FabricPriceSerializer(serializers.ModelSerializer):
+    fabric_type = serializers.SlugRelatedField(
+        slug_field="subid",
+        queryset=FabricType.objects.all()
+    )
+    fabric_name = serializers.CharField(source="fabric_type.name", read_only=True)
 
     class Meta:
-        model = ProductPriceAdjustment
-        fields = ["fabric_type", "extra_price"]
-        ref_name = "NestedProductPriceAdjustment"   # 👈 add this
+        model = FabricPrice
+        fields = ["fabric_type", "fabric_name", "price"]
 
 
 class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
-    fabric_adjustments = ProductPriceAdjustmentNestedSerializer(many=True, required=False)
+    variant_type = serializers.SlugRelatedField(
+        slug_field="subid",
+        queryset=ProductVariantType.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    variant_name = serializers.CharField(
+        source="variant_type.name", read_only=True, default=None
+    )
+
+    # ✅ instead of nested fabric_adjustments, now show master fabric prices
+    fabric_prices = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductPriceTier
-        fields = ["variant_type", "min_qty", "max_qty", "base_price", "fabric_adjustments"]
-        ref_name = "NestedProductPriceTier"   # 👈 add this
+        fields = [
+            "variant_type",
+            "variant_name",
+            "min_qty",
+            "max_qty",
+            "base_price",
+            "fabric_prices",
+        ]
+        ref_name = "NestedProductPriceTier"
+
+    def get_fabric_prices(self, obj):
+        """Return all fabric prices for this variant type (from master FabricPrice table)."""
+        variant = obj.variant_type
+        if not variant:
+            return [{
+                "fabric_type": None,
+                "fabric_name": "Standard",
+                "price": "0.00"
+            }]
+        prices = FabricPrice.objects.filter(variant_type=variant).order_by("price")
+        return FabricPriceSerializer(prices, many=True).data
 
     def create(self, validated_data):
-        fabric_data = validated_data.pop("fabric_adjustments", [])
-        tier = ProductPriceTier.objects.create(**validated_data)
-        for f in fabric_data:
-            ProductPriceAdjustment.objects.create(product_price_tier=tier, **f)
-        return tier
-        
+        return ProductPriceTier.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
+# --- Product Serializer ----------------------------------------------------
+
 class ProductSerializer(BaseModelSerializer):
     store = serializers.SlugRelatedField(
         slug_field="subid",
@@ -62,27 +103,74 @@ class ProductSerializer(BaseModelSerializer):
         queryset=Printer.objects.all(),
         write_only=True
     )
-    printer_display = PrinterSerializer(source='printer', read_only=True)
-    store_display = StoreSerializer(source='store', read_only=True)
 
-    # price_tiers = ProductPriceTierNestedSerializer(many=True, required=False)
+    printer_display = PrinterSerializer(source="printer", read_only=True)
+    store_display = StoreSerializer(source="store", read_only=True)
+
+    price_tiers = ProductPriceTierNestedSerializer(many=True, required=False)
 
     class Meta:
         model = Product
         fields = [
-            "pk", "name", "image", "printer", "printer_display",
-            "store", "store_display", "sku",
+            "pk",
+            "name",
+            "image",
+            "printer",
+            "printer_display",
+            "store",
+            "store_display",
+            "sku",
+            "price_tiers",
         ]
-        
+
     def create(self, validated_data):
         tiers_data = validated_data.pop("price_tiers", [])
         product = Product.objects.create(**validated_data)
         for tier_data in tiers_data:
-            ProductPriceTierNestedSerializer().create({
-                **tier_data,
-                "product": product
-            })
+            ProductPriceTier.objects.create(product=product, **tier_data)
         return product
+
+    def update(self, instance, validated_data):
+        tiers_data = validated_data.pop("price_tiers", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if tiers_data is not None:
+            instance.price_tiers.all().delete()
+            for tier_data in tiers_data:
+                ProductPriceTier.objects.create(product=instance, **tier_data)
+        return instance
+
+    def to_representation(self, instance):
+        """Group price tiers by variant_type and include fabric prices."""
+        data = super().to_representation(instance)
+        tiers = data.pop("price_tiers", [])
+
+        grouped = {}
+        for t in tiers:
+            variant_type = t.get("variant_type")
+            variant_name = t.get("variant_name")
+
+            key = variant_type or "base"
+            if key not in grouped:
+                grouped[key] = {
+                    "variant_type": {
+                        "pk": variant_type,
+                        "name": variant_name or None,
+                    },
+                    "tiers": [],
+                }
+
+            grouped[key]["tiers"].append({
+                "min_qty": t["min_qty"],
+                "max_qty": t["max_qty"],
+                "base_price": t["base_price"],
+                "fabric_prices": t["fabric_prices"],
+            })
+
+        data["price_tiers"] = list(grouped.values())
+        return data
         
 class ProductSerializerSimple(BaseModelSerializer):
     """

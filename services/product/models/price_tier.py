@@ -37,7 +37,10 @@ class ProductPriceTier(get_subid_model()):
     ProductPriceTier model
     """
     product = models.ForeignKey("product.Product", on_delete=models.CASCADE, related_name="price_tiers")
-    variant_type = models.ForeignKey(ProductVariantType, on_delete=models.CASCADE, related_name="price_tiers")
+    variant_type = models.ForeignKey(
+        ProductVariantType, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="price_tiers"
+    )
     min_qty = models.PositiveIntegerField()
     max_qty = models.PositiveIntegerField(null=True, blank=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -48,8 +51,8 @@ class ProductPriceTier(get_subid_model()):
     objects = ProductPriceTierManager()
 
     class Meta:
-        verbose_name = _("fabric type")
-        verbose_name_plural = _("fabric types")
+        verbose_name = _("price tier")
+        verbose_name_plural = _("price tiers")
         ordering = ["min_qty"]
         unique_together = ("product", "variant_type", "min_qty", "max_qty")
 
