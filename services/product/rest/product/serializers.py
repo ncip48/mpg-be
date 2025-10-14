@@ -8,7 +8,6 @@ from services.printer.models.printer import Printer
 from services.printer.rest.printer.serializers import PrinterSerializer
 from services.product.models.fabric_price import FabricPrice
 from services.product.models.fabric_type import FabricType
-from services.product.models.price_adjustment import ProductPriceAdjustment
 from services.product.models.price_tier import ProductPriceTier
 from services.product.models.product import Product
 from services.product.models.variant_type import ProductVariantType
