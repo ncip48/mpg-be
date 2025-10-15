@@ -43,6 +43,8 @@ class FabricPrice(get_subid_model()):
     
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    
+    objects = FabricPriceManager()
 
     class Meta:
         unique_together = ("fabric_type", "variant_type")
