@@ -48,3 +48,9 @@ class OrderExtraCost(get_subid_model()):
     
     def __str__(self):
         return f"ExtraCost {self.pk} for Order {self.order.pk}: {self.description}"
+    
+    @property
+    def total_amount(self):
+        if self.quantity is not None and self.amount is not None:
+            return self.quantity * self.amount
+        return 0

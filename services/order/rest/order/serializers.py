@@ -165,7 +165,7 @@ class OrderCreateSerializer(BaseModelSerializer):
 class OrderItemListSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()
     fabric_type = serializers.CharField(source="fabric_type.name")
-    subtotal = serializers.SerializerMethodField()
+    # subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
@@ -184,25 +184,6 @@ class OrderItemListSerializer(serializers.ModelSerializer):
             except (TypeError, ValueError):
                 pass
         return data
-    
-    def get_subtotal(self, obj):
-        # Get fabric_price if available based on product, fabric_type, variant_type
-        variant_type = getattr(obj, "variant_type", None)
-        fabric_type = getattr(obj, "fabric_type", None)
-        price = getattr(obj, "price", 0)
-        qty = getattr(obj, "quantity", 0)
-
-        fabric_price_obj = None
-        if variant_type and fabric_type:
-            fabric_price_qs = getattr(variant_type, "fabric_prices", None)
-            if fabric_price_qs is not None:
-                fabric_price_qs_filtered = fabric_price_qs.filter(fabric_type=fabric_type, variant_type=variant_type)
-                fabric_price_obj = fabric_price_qs_filtered.first()
-        if fabric_price_obj and hasattr(fabric_price_obj, "price"):
-            subtotal = qty * price + fabric_price_obj.price
-        else:
-            subtotal = qty * price
-        return subtotal
     
     def get_product_name(self, instance):
         product = getattr(instance, "product_name", None)

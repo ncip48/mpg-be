@@ -57,3 +57,22 @@ class OrderItem(get_subid_model()):
             f"Quantity: {self.quantity}, "
             f"Price: {self.price})"
         )
+
+    @property
+    def subtotal(self):
+        variant_type = getattr(self, "variant_type", None)
+        fabric_type = getattr(self, "fabric_type", None)
+        price = getattr(self, "price", 0)
+        qty = getattr(self, "quantity", 0)
+
+        fabric_price_obj = None
+        if variant_type and fabric_type:
+            fabric_price_qs = getattr(variant_type, "fabric_prices", None)
+            if fabric_price_qs is not None:
+                fabric_price_qs_filtered = fabric_price_qs.filter(
+                    fabric_type=fabric_type, variant_type=variant_type
+                )
+                fabric_price_obj = fabric_price_qs_filtered.first()
+        if fabric_price_obj and hasattr(fabric_price_obj, "price"):
+            return qty * price + fabric_price_obj.price
+        return qty * price
