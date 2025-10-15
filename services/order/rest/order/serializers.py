@@ -9,6 +9,7 @@ from services.customer.rest.customer.serializers import CustomerSerializer
 from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
+from services.order.rest.order.utils import get_dynamic_item_price
 from services.product.models import ProductVariantType, Product, FabricType
 
 if TYPE_CHECKING:
@@ -69,7 +70,7 @@ class OrderItemInputSerializer(BaseModelSerializer):
         allow_null=True
     )
     quantity = serializers.IntegerField(min_value=1)
-    price = serializers.DecimalField(max_digits=12, decimal_places=2)
+    # price = serializers.DecimalField(max_digits=12, decimal_places=2)
     
     class Meta:
         model = OrderItem
@@ -78,7 +79,7 @@ class OrderItemInputSerializer(BaseModelSerializer):
             "fabric_type",
             "variant_type",
             "quantity",
-            "price",
+            # "price",
         )
 
 
@@ -132,7 +133,9 @@ class OrderCreateSerializer(BaseModelSerializer):
                 fabric_type = item_data["fabric_type"]
                 variant_type = item_data.get("variant_type")
                 qty = item_data["quantity"]
-                price = item_data["price"]
+                # price = item_data["price"]
+                
+                final_price,_ = get_dynamic_item_price(product, fabric_type, variant_type, qty)
 
                 OrderItem.objects.create(
                     order=order,
@@ -140,7 +143,7 @@ class OrderCreateSerializer(BaseModelSerializer):
                     fabric_type=fabric_type,
                     variant_type=variant_type,
                     quantity=qty,
-                    price=price,
+                    price=final_price,
                 )
                 
             # Create extra costs
