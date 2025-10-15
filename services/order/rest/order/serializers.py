@@ -163,7 +163,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         return invoice
 
 class OrderItemListSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source="product_name.name")
+    product_name = serializers.SerializerMethodField()
     fabric_type = serializers.CharField(source="fabric_type.name")
     subtotal = serializers.SerializerMethodField()
 
@@ -203,7 +203,17 @@ class OrderItemListSerializer(serializers.ModelSerializer):
         else:
             subtotal = qty * price
         return subtotal
+    
+    def get_product_name(self, instance):
+        product = getattr(instance, "product_name", None)
+        product_display_name = getattr(product, "name", str(product)) if product else None
 
+        variant_type = getattr(instance, "variant_type", None)
+        variant_code = getattr(variant_type, "code", None) if variant_type else None
+
+        if variant_type and variant_code and product_display_name:
+            return f"{variant_code}. {product_display_name}"
+        return product_display_name
 
 class InvoiceSummarySerializer(BaseModelSerializer):
     total_invoice = serializers.SerializerMethodField()
