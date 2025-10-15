@@ -62,8 +62,8 @@ class OrderViewSet(BaseViewSet):
         response_serializer = OrderDetailSerializer(invoice.order)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-    def generate_invoice_pdf(self, request, pk):
-        invoice = get_object_or_404(Invoice, order__subid=pk)
+    def generate_invoice_pdf(self, request, subid):
+        invoice = get_object_or_404(Invoice, order__subid=subid)
         order = invoice.order
 
         buffer = BytesIO()

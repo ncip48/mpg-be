@@ -10,7 +10,7 @@ router.register(r'orders', OrderViewSet, basename='printer')
 urlpatterns = [
     path('', include(router.urls)),
     path(
-        "orders/<str:pk>/invoice/",
+        "orders/<str:subid>/invoice/",
         OrderViewSet.as_view({"get": "generate_invoice_pdf"}),
         name="invoice-pdf"
     ),
