@@ -8,10 +8,10 @@ router.register(r'stores', StoreViewSet, basename='store')
 # --- End Router ---
 
 urlpatterns = [
-    path('', include(router.urls)),
     path(
-        "autocomplete/",
+        "stores/autocomplete/",
         StoreViewSet.as_view({"get": "autocomplete"}),
         name="autocomplete"
     ),
+    path('', include(router.urls)),
 ]
