@@ -103,8 +103,55 @@ class OrderCreateSerializer(BaseModelSerializer):
             "items",
             "delivery_date",
             "note",
-            "extra_costs"
+            "extra_costs",
+            # Marketplace fields
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
         )
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        data = self.initial_data if hasattr(self, "initial_data") else {}
+
+        is_deposit = data.get("is_deposit", False)
+        order_type = data.get("order_type", None)
+
+        # Normalize boolean if sent as string
+        if isinstance(is_deposit, str):
+            is_deposit = is_deposit.lower() == "true"
+
+        if not is_deposit and order_type == "marketplace":
+            # 'customer' and 'items' are NOT required
+            self.fields["customer"].required = False
+            self.fields["items"].required = False
+            # The following become required
+            extra_required = [
+                "user_name",
+                "order_number",
+                "marketplace",
+                "order_choice",
+                "estimated_shipping_date",
+            ]
+            for field_name in extra_required:
+                if field_name in self.fields:
+                    self.fields[field_name].required = True
+        else:
+            # 'customer' and 'items' are required, others are not
+            self.fields["customer"].required = True
+            self.fields["items"].required = True
+            extra_mkt_fields = [
+                "user_name",
+                "order_number",
+                "marketplace",
+                "order_choice",
+                "estimated_shipping_date",
+            ]
+            for field_name in extra_mkt_fields:
+                if field_name in self.fields:
+                    self.fields[field_name].required = False
 
     def create(self, validated_data):
         from decimal import Decimal
@@ -112,48 +159,59 @@ class OrderCreateSerializer(BaseModelSerializer):
         from django.db import transaction
 
         is_deposit = validated_data.pop("is_deposit", False)
-        customer = validated_data.pop("customer")
-        items_data = validated_data.pop("items")
+        order_type = validated_data.get("order_type")
         note = validated_data.pop("note", "")
         delivery_date = validated_data.pop("delivery_date", timezone.now().date())
         extra_costs_data = validated_data.pop("extra_costs", [])
 
         with transaction.atomic():
-            # Create Order
-            order = Order.objects.create(
-                status="deposit" if is_deposit else "draft",
-                customer=customer,
-                created_by=self.context["request"].user,
-                **validated_data
-            )
-
-            # Create Items
-            for item_data in items_data:
-                product = item_data["product"]
-                fabric_type = item_data["fabric_type"]
-                variant_type = item_data.get("variant_type")
-                qty = item_data["quantity"]
-                # price = item_data["price"]
-                
-                final_price,_ = get_dynamic_item_price(product, fabric_type, variant_type, qty)
-
-                OrderItem.objects.create(
-                    order=order,
-                    product_name=product,
-                    fabric_type=fabric_type,
-                    variant_type=variant_type,
-                    quantity=qty,
-                    price=final_price,
+            # Handle order creation
+            if not is_deposit and order_type == "marketplace":
+                # Marketplace order - customer/items not required
+                order = Order.objects.create(
+                    status="draft",
+                    created_by=self.context["request"].user,
+                    **validated_data,
                 )
-                
-            # Create extra costs
+            else:
+                # Normal konveksi order
+                customer = validated_data.pop("customer")
+                items_data = validated_data.pop("items")
+
+                order = Order.objects.create(
+                    status="deposit" if is_deposit else "draft",
+                    customer=customer,
+                    created_by=self.context["request"].user,
+                    **validated_data,
+                )
+
+                # Create order items
+                for item_data in items_data:
+                    product = item_data["product"]
+                    fabric_type = item_data["fabric_type"]
+                    variant_type = item_data.get("variant_type")
+                    qty = item_data["quantity"]
+
+                    final_price, _ = get_dynamic_item_price(
+                        product, fabric_type, variant_type, qty
+                    )
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product_name=product,
+                        fabric_type=fabric_type,
+                        variant_type=variant_type,
+                        quantity=qty,
+                        price=final_price,
+                    )
+
+            # Create extra costs (shared)
             for extra_data in extra_costs_data:
                 OrderExtraCost.objects.create(order=order, **extra_data)
 
-            # Generate invoice number (e.g., SI.2025.10.0001)
+            # Generate invoice
             today = timezone.now().date()
             invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
-
             invoice = Invoice.objects.create(
                 status="partial" if is_deposit else "draft",
                 invoice_no=invoice_no,
@@ -172,7 +230,7 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ["product_name", "fabric_type", "price", "quantity", "subtotal"]
+        fields = ["product_name", "fabric_type", "price", "quantity", "subtotal",]
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -263,6 +321,7 @@ class OrderListSerializer(BaseModelSerializer):
         model = Order
         fields = [
             "pk",
+            "order_type",
             "customer",
             "priority_status",
             "status",
@@ -270,6 +329,12 @@ class OrderListSerializer(BaseModelSerializer):
             "items",
             "invoice",
             # "extra_costs",
+            # Marketplace fields
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
         ]
 
 
@@ -283,11 +348,18 @@ class OrderDetailSerializer(BaseModelSerializer):
         model = Order
         fields = [
             "pk",
+            "order_type",
             "customer",
             "priority_status",
             "status",
             "created",
             "items",
             "invoice",
-            "extra_costs"
+            "extra_costs",
+            # Marketplace fields
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
         ]

@@ -33,7 +33,7 @@ class OrderManager(_OrderManagerBase):
 
 
 class Order(get_subid_model()):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, related_name="orders", null=True, blank=True)
     order_type = models.CharField(
         max_length=20,
         choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")],
@@ -53,8 +53,34 @@ class Order(get_subid_model()):
         ],
         default="draft"
     )
-    # total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    
+    # Marketplace Form
+    user_name = models.CharField(max_length=150, blank=True, null=True)
+    order_number = models.CharField(max_length=100, blank=True, null=True)
+    marketplace = models.CharField(
+        max_length=20,
+        choices=[
+            ("shopee", "Shopee"),
+            ("tiktok", "TikTok"),
+            ("tokopedia", "Tokopedia"),
+        ],
+        blank=True,
+        null=True,
+    )
+    order_choice = models.CharField(
+        max_length=20,
+        choices=[
+            ("custom_design", "Custom Design"),
+            ("top", "Top"),
+            ("pants", "Pants"),
+            ("set", "Set"),
+        ],
+        blank=True,
+        null=True,
+    )
+    estimated_shipping_date = models.DateField(blank=True, null=True)
+    
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

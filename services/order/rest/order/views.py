@@ -45,13 +45,17 @@ class OrderViewSet(BaseViewSet):
         "order.view_order",
     ]
     my_tags = ["Orders"]
-    queryset = (
-        Order.objects.select_related("customer", "invoice")
-        .prefetch_related("items")
-        .order_by("-created")
-    )
+    queryset = Order.objects.select_related("customer", "invoice").prefetch_related("items").order_by("-created")
     lookup_field = "subid"
     serializer_class = OrderListSerializer
+    filterset_fields = [
+        "order_type",
+        "priority_status",
+        "status",
+        "marketplace",
+        "order_choice",
+    ]
+    search_fields = ["order_number", "customer__name", "invoice__invoice_no"]
 
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data, context={"request": request})
