@@ -38,7 +38,7 @@ class OrderItemManager(_OrderItemManagerBase):
 
 class OrderItem(get_subid_model()):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    product_name = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="items")
     fabric_type = models.ForeignKey(FabricType, on_delete=models.CASCADE, related_name="items")
     variant_type = models.ForeignKey(
         ProductVariantType, on_delete=models.SET_NULL,
@@ -53,7 +53,7 @@ class OrderItem(get_subid_model()):
         return (
             f"OrderItem {self.pk} "
             f"(Order: {self.order.pk}, "
-            f"Product: {self.product_name}, "
+            f"Product: {self.product}, "
             f"Quantity: {self.quantity}, "
             f"Price: {self.price})"
         )

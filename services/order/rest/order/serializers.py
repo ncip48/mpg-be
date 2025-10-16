@@ -110,6 +110,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            "deposit_amount",
         )
         
     def __init__(self, *args, **kwargs):
@@ -142,6 +143,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             # 'customer' and 'items' are required, others are not
             self.fields["customer"].required = True
             self.fields["items"].required = True
+            self.fields["deposit_amount"].required = True
             extra_mkt_fields = [
                 "user_name",
                 "order_number",
@@ -198,7 +200,7 @@ class OrderCreateSerializer(BaseModelSerializer):
 
                     OrderItem.objects.create(
                         order=order,
-                        product_name=product,
+                        product=product,
                         fabric_type=fabric_type,
                         variant_type=variant_type,
                         quantity=qty,
@@ -247,7 +249,7 @@ class OrderItemListSerializer(serializers.ModelSerializer):
         return data
     
     def get_product_name(self, instance):
-        product = getattr(instance, "product_name", None)
+        product = getattr(instance, "product", None)
         product_display_name = getattr(product, "name", str(product)) if product else None
 
         variant_type = getattr(instance, "variant_type", None)
@@ -339,9 +341,25 @@ class OrderListSerializer(BaseModelSerializer):
             "reminder_one",
             "reminder_two",
             "is_expired",
+            "is_paid_off",
             "note",
             "shipping_courier",
+            "deposit_amount",
         ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        deposit_amount = data.get("deposit_amount")
+        if deposit_amount is not None:
+            try:
+                dep_float = float(deposit_amount)
+                if dep_float == int(dep_float):
+                    data["deposit_amount"] = int(dep_float)
+                else:
+                    data["deposit_amount"] = dep_float
+            except (TypeError, ValueError):
+                pass
+        return data
 
 
 class OrderDetailSerializer(BaseModelSerializer):
@@ -372,6 +390,22 @@ class OrderDetailSerializer(BaseModelSerializer):
             "reminder_one",
             "reminder_two",
             "is_expired",
+            "is_paid_off",
             "note",
             "shipping_courier",
+            "deposit_amount",
         ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        deposit_amount = data.get("deposit_amount")
+        if deposit_amount is not None:
+            try:
+                dep_float = float(deposit_amount)
+                if dep_float == int(dep_float):
+                    data["deposit_amount"] = int(dep_float)
+                else:
+                    data["deposit_amount"] = dep_float
+            except (TypeError, ValueError):
+                pass
+        return data

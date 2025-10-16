@@ -114,7 +114,7 @@ class OrderViewSet(BaseViewSet):
             total_invoice += subtotal
             
             # Get basic fields safely
-            product = getattr(item, "product_name", None)
+            product = getattr(item, "product", None)
             product_name = getattr(product, "name", "-")
 
             variant_type = getattr(item, "variant_type", None)
