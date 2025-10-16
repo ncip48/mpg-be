@@ -56,6 +56,9 @@ class OrderViewSet(BaseViewSet):
         "order_choice",
     ]
     search_fields = ["order_number", "customer__name", "invoice__invoice_no"]
+    serializer_map = {
+        "create": OrderCreateSerializer,
+    }
 
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data, context={"request": request})
