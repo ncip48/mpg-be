@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 # --- Router for ViewSets ---
 router = DefaultRouter()
-router.register(r'orders', OrderViewSet, basename='printer')
+router.register(r'orders', OrderViewSet, basename='orders')
 # --- End Router ---
 
 urlpatterns = [

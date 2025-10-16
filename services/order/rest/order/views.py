@@ -13,8 +13,10 @@ from core.common.viewsets import BaseViewSet
 from services.order.models.invoice import Invoice
 from services.order.rest.order.serializers import (
     OrderCreateSerializer,
+    OrderKonveksiListSerializer,
     OrderListSerializer,
     OrderDetailSerializer,
+    OrderMarketplaceListSerializer,
 )
 from services.order.models import Order
 
@@ -54,11 +56,45 @@ class OrderViewSet(BaseViewSet):
         "status",
         "marketplace",
         "order_choice",
+        "is_paid_off",
+        "is_expired",
     ]
     search_fields = ["order_number", "customer__name", "invoice__invoice_no"]
     serializer_map = {
         "create": OrderCreateSerializer,
+        "konveksi": OrderKonveksiListSerializer,
+        "marketplace": OrderMarketplaceListSerializer
     }
+    
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the current action.
+        Defaults to `serializer_class` if no match in `serializer_map`.
+        """
+        # Handle "list" with query param same as before
+        if self.action == "list" and self.request.query_params.get("order_type") == "konveksi":
+            serializer = self.serializer_map.get("konveksi", None)
+            if serializer is not None:
+                return serializer
+
+        if self.action == "list" and self.request.query_params.get("order_type") == "marketplace":
+            serializer = self.serializer_map.get("marketplace", None)
+            if serializer is not None:
+                return serializer
+            
+        if self.action == "retrieve":
+            obj = self.get_object()
+            if hasattr(obj, "order_type"):
+                if obj.order_type == "konveksi":
+                    serializer = self.serializer_map.get("konveksi", None)
+                    if serializer is not None:
+                        return serializer
+                elif obj.order_type == "marketplace":
+                    serializer = self.serializer_map.get("marketplace", None)
+                    if serializer is not None:
+                        return serializer
+        
+        return self.serializer_map.get(self.action, self.serializer_class)
 
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data, context={"request": request})

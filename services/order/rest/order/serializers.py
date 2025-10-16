@@ -409,3 +409,68 @@ class OrderDetailSerializer(BaseModelSerializer):
             except (TypeError, ValueError):
                 pass
         return data
+    
+class OrderKonveksiListSerializer(BaseModelSerializer):
+    customer = CustomerSerializer(read_only=True)
+    invoice = InvoiceSummarySerializer(read_only=True)
+    items = OrderItemListSerializer(many=True, read_only=True)
+    # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "pk",
+            "order_type",
+            "customer",
+            "priority_status",
+            "status",
+            "created",
+            "items",
+            "invoice",
+            # CS2
+            "reminder_one",
+            "reminder_two",
+            "is_expired",
+            "is_paid_off",
+            "note",
+            "shipping_courier",
+            "deposit_amount",
+        ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        deposit_amount = data.get("deposit_amount")
+        if deposit_amount is not None:
+            try:
+                dep_float = float(deposit_amount)
+                if dep_float == int(dep_float):
+                    data["deposit_amount"] = int(dep_float)
+                else:
+                    data["deposit_amount"] = dep_float
+            except (TypeError, ValueError):
+                pass
+        return data
+    
+class OrderMarketplaceListSerializer(BaseModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            "pk",
+            "order_type",
+            "priority_status",
+            # "status",
+            "created",
+            # Marketplace fields
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
+            # CS2
+            "reminder_one",
+            "reminder_two",
+            "is_expired",
+            "is_paid_off",
+            "note",
+            "shipping_courier",
+        ]
