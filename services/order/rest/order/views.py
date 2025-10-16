@@ -60,10 +60,10 @@ class OrderViewSet(BaseViewSet):
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        invoice = serializer.save()
+        order = serializer.save()
 
         # Use the same detail serializer for response
-        response_serializer = OrderDetailSerializer(invoice.order)
+        response_serializer = OrderDetailSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def generate_invoice_pdf(self, request, subid):

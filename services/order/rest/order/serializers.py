@@ -205,23 +205,23 @@ class OrderCreateSerializer(BaseModelSerializer):
                         price=final_price,
                     )
 
-            # Create extra costs (shared)
-            for extra_data in extra_costs_data:
-                OrderExtraCost.objects.create(order=order, **extra_data)
+                # Create extra costs (shared)
+                for extra_data in extra_costs_data:
+                    OrderExtraCost.objects.create(order=order, **extra_data)
 
-            # Generate invoice
-            today = timezone.now().date()
-            invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
-            invoice = Invoice.objects.create(
-                status="partial" if is_deposit else "draft",
-                invoice_no=invoice_no,
-                order=order,
-                issued_date=today,
-                delivery_date=delivery_date,
-                note=note,
-            )
+                # Generate invoice
+                today = timezone.now().date()
+                invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
+                invoice = Invoice.objects.create(
+                    status="partial" if is_deposit else "draft",
+                    invoice_no=invoice_no,
+                    order=order,
+                    issued_date=today,
+                    delivery_date=delivery_date,
+                    note=note,
+                )
 
-        return invoice
+        return order
 
 class OrderItemListSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()
