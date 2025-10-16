@@ -81,6 +81,13 @@ class Order(get_subid_model()):
     )
     estimated_shipping_date = models.DateField(blank=True, null=True)
     
+    # For CS2
+    reminder_one = models.BooleanField(default=False)
+    reminder_two = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+    note = models.TextField(blank=True, null=True)
+    shipping_courier = models.CharField(max_length=100, blank=True, null=True)
+    
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

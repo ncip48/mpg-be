@@ -335,6 +335,12 @@ class OrderListSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            # CS2
+            "reminder_one",
+            "reminder_two",
+            "is_expired",
+            "note",
+            "shipping_courier",
         ]
 
 
@@ -362,4 +368,10 @@ class OrderDetailSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            # CS 2
+            "reminder_one",
+            "reminder_two",
+            "is_expired",
+            "note",
+            "shipping_courier",
         ]
