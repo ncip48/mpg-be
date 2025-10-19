@@ -32,11 +32,7 @@ class ProductVariantTypeManager(_ProductVariantTypeManagerBase):
 
 
 class ProductVariantType(get_subid_model()):
-    code = models.CharField(max_length=1, choices=[
-        ("A", "Khusus Atasan"),
-        ("B", "Khusus Stelan & Atasan Bolak Balik"),
-        ("C", "Khusus Stelan Bolak Balik"),
-    ], unique=True)
+    code = models.CharField(max_length=1, unique=True)
     name = models.CharField(max_length=100)
     note = models.CharField(max_length=255, blank=True, null=True)
     
