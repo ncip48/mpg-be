@@ -21,7 +21,12 @@ class FabricTypeViewSet(BaseViewSet):
     A viewset for viewing and editing Fabric Types.
     Accessible only by superusers.
     """
-    queryset = FabricType.objects.all()
+    queryset = (
+        FabricType.objects
+        .prefetch_related(
+            "fabric_prices__variant_type",
+        )
+    )
     serializer_class = FabricTypeSerializer
     lookup_field = "subid"
     search_fields = ["name"]
