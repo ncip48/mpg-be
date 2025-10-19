@@ -43,14 +43,14 @@ class FabricTypeSerializer(BaseModelSerializer):
     Serializer for Fabric Type management by superusers.
     Handles CRUD for fabric types and related configurations.
     """
-    # fabric_prices = FabricVariantPriceSerializer(many=True, read_only=True)
+    fabric_prices = FabricVariantPriceSerializer(many=True, read_only=True)
 
     class Meta:
         model = FabricType
         fields = [
             "pk",
             "name",
-            # "fabric_prices",
+            "fabric_prices",
             "created",
             "updated",
         ]
