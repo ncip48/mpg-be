@@ -43,5 +43,6 @@ class ProductVariantTypeSerializerSimple(BaseModelSerializer):
         model = ProductVariantType
         fields = [
             "pk",
+            "code",
             "name",
         ]

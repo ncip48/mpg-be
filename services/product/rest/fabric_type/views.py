@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 import logging
 from core.common.viewsets import BaseViewSet
 from services.product.models.fabric_type import FabricType
-from services.product.rest.fabric_type.serializers import FabricTypeSerializer, FabricTypeSerializerSimple
+from services.product.rest.fabric_type.serializers import FabricTypeCreateSerializer, FabricTypeSerializer, FabricTypeSerializerSimple
 
 if TYPE_CHECKING:
     pass
@@ -34,4 +34,7 @@ class FabricTypeViewSet(BaseViewSet):
     my_tags = ["Fabric Types"]
     serializer_map = {
         "autocomplete": FabricTypeSerializerSimple,
+        "create": FabricTypeCreateSerializer,
+        "partial_update": FabricTypeCreateSerializer,
+        "update": FabricTypeCreateSerializer,
     }
