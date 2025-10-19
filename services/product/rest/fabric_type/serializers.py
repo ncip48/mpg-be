@@ -37,6 +37,22 @@ class FabricVariantPriceSerializer(BaseModelSerializer):
     class Meta:
         model = FabricPrice
         fields = ["pk", "variant_type", "price"]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # price must return int if int (e.g. '100.00' => 100, '99.99' => 99.99)
+        price = data.get("price")
+        if price is not None:
+            try:
+                price_float = float(price)
+                if price_float.is_integer():
+                    data["price"] = int(price_float)
+                else:
+                    data["price"] = float(price)
+            except (ValueError, TypeError):
+                # Keep original if conversion fails
+                pass
+        return data
 
 class FabricTypeSerializer(BaseModelSerializer):
     """
