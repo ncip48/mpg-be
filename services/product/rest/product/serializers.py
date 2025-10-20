@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 from rest_framework import serializers
 from typing import TYPE_CHECKING
 from django.utils.translation import gettext_lazy as _
@@ -95,6 +96,9 @@ class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
     
 # --- Product Serializer ----------------------------------------------------
 
+import json
+from rest_framework import serializers
+
 class ProductSerializer(BaseModelSerializer):
     store = serializers.SlugRelatedField(
         slug_field="subid",
@@ -126,15 +130,92 @@ class ProductSerializer(BaseModelSerializer):
             "price_tiers",
         ]
 
+    def _parse_json_field(self, data, field_name):
+        """
+        Safely get and parse a JSON-like field that may come from:
+         - JSON body (list/dict already)
+         - multipart form-data (value is a list of strings, or string)
+        Returns Python object or None.
+        """
+        # prefer explicit lookup in initial_data if available (for form-data)
+        value = None
+        # `data` might be a QueryDict or dict; handle both
+        if isinstance(data, dict) and field_name in data:
+            value = data.get(field_name)
+        else:
+            # fallback: try to read from self.initial_data if present
+            value = getattr(self, 'initial_data', {}).get(field_name)
+
+        # if value is a list (common with multipart/form-data), unwrap first element
+        if isinstance(value, (list, tuple)):
+            value = value[0] if value else None
+
+        # if it's already a Python list/dict (when Content-Type: application/json), return as-is
+        if isinstance(value, (list, dict)):
+            return value
+
+        # if it's a string, attempt JSON parse
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({field_name: "Invalid JSON format"})
+
+        # otherwise None or unknown -> return None
+        return None
+
+    def to_internal_value(self, data):
+        """
+        Only decode price_tiers when it's passed as a JSON string (form-data).
+        Do NOT pre-validate nested serializer here — let DRF handle validation.
+        """
+        data = data.copy()
+        parsed = self._parse_json_field(data, "price_tiers")
+        if parsed is not None:
+            # assign the parsed structure so DRF will validate it using the declared field
+            data["price_tiers"] = parsed
+        return super().to_internal_value(data)
+
+    def _get_price_tiers_validated(self, raw_container):
+        """
+        Given a raw list of price tier dicts, validate them via nested serializer and
+        return validated_data (list of dicts) or raise ValidationError.
+        """
+        if raw_container is None:
+            return []
+        serializer = ProductPriceTierNestedSerializer(data=raw_container, many=True)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
     def create(self, validated_data):
-        tiers_data = validated_data.pop("price_tiers", [])
+        # standard path: nested field present in validated_data
+        tiers_data = validated_data.pop("price_tiers", None)
+
+        # fallback: parse from initial_data (works for multipart/form-data)
+        if tiers_data is None:
+            raw = self._parse_json_field(self.initial_data or {}, "price_tiers")
+            if raw is not None:
+                tiers_data = self._get_price_tiers_validated(raw)
+
+        if tiers_data is None:
+            tiers_data = []
+
         product = Product.objects.create(**validated_data)
+
         for tier_data in tiers_data:
             ProductPriceTier.objects.create(product=product, **tier_data)
+
         return product
 
     def update(self, instance, validated_data):
         tiers_data = validated_data.pop("price_tiers", None)
+
+        # fallback same as create
+        if tiers_data is None:
+            raw = self._parse_json_field(self.initial_data or {}, "price_tiers")
+            if raw is not None:
+                tiers_data = self._get_price_tiers_validated(raw)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -143,6 +224,7 @@ class ProductSerializer(BaseModelSerializer):
             instance.price_tiers.all().delete()
             for tier_data in tiers_data:
                 ProductPriceTier.objects.create(product=instance, **tier_data)
+
         return instance
 
     def to_representation(self, instance):
@@ -168,11 +250,12 @@ class ProductSerializer(BaseModelSerializer):
                 "min_qty": t["min_qty"],
                 "max_qty": t["max_qty"],
                 "base_price": t["base_price"],
-                "fabric_prices": t["fabric_prices"],
+                "fabric_prices": t.get("fabric_prices", []),
             })
 
         data["price_tiers"] = list(grouped.values())
         return data
+
         
 class ProductSerializerSimple(BaseModelSerializer):
     """

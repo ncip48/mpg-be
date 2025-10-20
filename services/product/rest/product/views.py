@@ -36,7 +36,7 @@ class ProductViewSet(BaseViewSet):
         "product.delete_product",
         "product.view_product",
     ]
-    # parser_classes = [MultiPartParser, FormParser] 
+    parser_classes = [MultiPartParser, FormParser] 
     serializer_map = {
         "autocomplete": ProductSerializerSimple,
     }
