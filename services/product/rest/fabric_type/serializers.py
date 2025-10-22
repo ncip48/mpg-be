@@ -8,16 +8,16 @@ from core.common.serializers import BaseModelSerializer
 from services.product.models.fabric_price import FabricPrice
 from services.product.models.fabric_type import FabricType
 from services.product.models.variant_type import ProductVariantType
-from services.product.rest.variant_type.serializers import ProductVariantTypeSerializerSimple
+from services.product.rest.variant_type.serializers import (
+    ProductVariantTypeSerializerSimple,
+)
 
 if TYPE_CHECKING:
     pass
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "FabricTypeSerializer",
-)
+__all__ = ("FabricTypeSerializer",)
 
 
 class FabricVariantPriceSerializer(BaseModelSerializer):
@@ -25,6 +25,7 @@ class FabricVariantPriceSerializer(BaseModelSerializer):
     Handles relation between FabricType and ProductVariantType with price.
     Used for nested input/output in FabricTypeCreateSerializer.
     """
+
     pk = serializers.SlugRelatedField(
         slug_field="subid",
         source="variant_type",
@@ -37,7 +38,7 @@ class FabricVariantPriceSerializer(BaseModelSerializer):
     class Meta:
         model = FabricPrice
         fields = ["pk", "variant_type", "price"]
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # price must return int if int (e.g. '100.00' => 100, '99.99' => 99.99)
@@ -54,11 +55,13 @@ class FabricVariantPriceSerializer(BaseModelSerializer):
                 pass
         return data
 
+
 class FabricTypeSerializer(BaseModelSerializer):
     """
     Serializer for Fabric Type management by superusers.
     Handles CRUD for fabric types and related configurations.
     """
+
     fabric_prices = FabricVariantPriceSerializer(many=True, read_only=True)
 
     class Meta:
@@ -70,7 +73,8 @@ class FabricTypeSerializer(BaseModelSerializer):
             "created",
             "updated",
         ]
-        
+
+
 class FabricTypeSerializerSimple(BaseModelSerializer):
     """
     Serializer for Fabric Type management by superusers.
@@ -84,11 +88,13 @@ class FabricTypeSerializerSimple(BaseModelSerializer):
             "name",
         ]
 
+
 class FabricTypeCreateSerializer(BaseModelSerializer):
     """
     Serializer for Fabric Type management by superusers.
     Handles CRUD for fabric types and related variant-type pricing.
     """
+
     variant_types = FabricVariantPriceSerializer(many=True, write_only=True)
     fabric_prices = FabricVariantPriceSerializer(many=True, read_only=True)
 
@@ -97,8 +103,8 @@ class FabricTypeCreateSerializer(BaseModelSerializer):
         fields = [
             "pk",
             "name",
-            "variant_types",     # input field
-            "fabric_prices",     # output field
+            "variant_types",  # input field
+            "fabric_prices",  # output field
             "created",
             "updated",
         ]
@@ -110,9 +116,7 @@ class FabricTypeCreateSerializer(BaseModelSerializer):
         # create FabricPrice relations
         for v in variant_data:
             FabricPrice.objects.create(
-                fabric_type=fabric,
-                variant_type=v["variant_type"],
-                price=v["price"]
+                fabric_type=fabric, variant_type=v["variant_type"], price=v["price"]
             )
 
         return fabric
