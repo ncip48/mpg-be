@@ -31,10 +31,10 @@ __all__ = (
 
 # --- Nested serializers ----------------------------------------------------
 
+
 class FabricPriceSerializer(serializers.ModelSerializer):
     fabric_type = serializers.SlugRelatedField(
-        slug_field="subid",
-        queryset=FabricType.objects.all()
+        slug_field="subid", queryset=FabricType.objects.all()
     )
     fabric_name = serializers.CharField(source="fabric_type.name", read_only=True)
 
@@ -77,11 +77,7 @@ class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
         """Return all fabric prices for this variant type (from master FabricPrice table)."""
         variant = obj.variant_type
         if not variant:
-            return [{
-                "fabric_type": None,
-                "fabric_name": "Standard",
-                "price": "0.00"
-            }]
+            return [{"fabric_type": None, "fabric_name": "Standard", "price": "0.00"}]
         prices = FabricPrice.objects.filter(variant_type=variant).order_by("price")
         return FabricPriceSerializer(prices, many=True).data
 
@@ -93,22 +89,20 @@ class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-    
+
+
 # --- Product Serializer ----------------------------------------------------
 
 import json
 from rest_framework import serializers
 
+
 class ProductSerializer(BaseModelSerializer):
     store = serializers.SlugRelatedField(
-        slug_field="subid",
-        queryset=Store.objects.all(),
-        write_only=True
+        slug_field="subid", queryset=Store.objects.all(), write_only=True
     )
     printer = serializers.SlugRelatedField(
-        slug_field="subid",
-        queryset=Printer.objects.all(),
-        write_only=True
+        slug_field="subid", queryset=Printer.objects.all(), write_only=True
     )
 
     printer_display = PrinterSerializer(source="printer", read_only=True)
@@ -144,7 +138,7 @@ class ProductSerializer(BaseModelSerializer):
             value = data.get(field_name)
         else:
             # fallback: try to read from self.initial_data if present
-            value = getattr(self, 'initial_data', {}).get(field_name)
+            value = getattr(self, "initial_data", {}).get(field_name)
 
         # if value is a list (common with multipart/form-data), unwrap first element
         if isinstance(value, (list, tuple)):
@@ -242,25 +236,35 @@ class ProductSerializer(BaseModelSerializer):
             if key not in grouped:
                 grouped[key] = {
                     "pk": variant_type,
-                    "name": f"{variant_code}. {instance.name}" if variant_type else f"{instance.name}" or None,
+                    "variant_type": {
+                        "pk": variant_type,
+                        "name": variant_name,
+                        "code": variant_code,
+                    },
+                    "name": f"{variant_code}. {instance.name}"
+                    if variant_type
+                    else f"{instance.name}" or None,
                     "tiers": [],
                 }
 
-            grouped[key]["tiers"].append({
-                "min_qty": t["min_qty"],
-                "max_qty": t["max_qty"],
-                "base_price": t["base_price"],
-                "fabric_prices": t.get("fabric_prices", []),
-            })
+            grouped[key]["tiers"].append(
+                {
+                    "min_qty": t["min_qty"],
+                    "max_qty": t["max_qty"],
+                    "base_price": t["base_price"],
+                    "fabric_prices": t.get("fabric_prices", []),
+                }
+            )
 
         data["price_tiers"] = list(grouped.values())
         return data
 
-        
+
 class ProductSerializerSimple(BaseModelSerializer):
     """
     Simple serializer for Product, exposing only primary key and name.
     """
+
     class Meta:
         model = Product
-        fields = ['pk', 'name']
+        fields = ["pk", "name"]
