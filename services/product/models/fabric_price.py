@@ -37,16 +37,23 @@ class FabricPrice(get_subid_model()):
     """
     Fixed master price relation between FabricType and ProductVariantType.
     """
-    fabric_type = models.ForeignKey(FabricType, on_delete=models.CASCADE, related_name="fabric_prices")
-    variant_type = models.ForeignKey(ProductVariantType, on_delete=models.CASCADE, related_name="fabric_prices")
+
+    fabric_type = models.ForeignKey(
+        FabricType, on_delete=models.CASCADE, related_name="fabric_prices"
+    )
+    variant_type = models.ForeignKey(
+        ProductVariantType, on_delete=models.CASCADE, related_name="fabric_prices"
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    
+
     objects = FabricPriceManager()
 
     class Meta:
+        default_permissions = ()
+        permissions = ()
         unique_together = ("fabric_type", "variant_type")
         verbose_name = _("fabric price")
         verbose_name_plural = _("fabric prices")

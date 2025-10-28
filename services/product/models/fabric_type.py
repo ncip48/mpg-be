@@ -35,6 +35,7 @@ class FabricType(get_subid_model()):
     """
     FabricType model
     """
+
     name = models.CharField(max_length=100, unique=True)
     additional_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
@@ -44,6 +45,8 @@ class FabricType(get_subid_model()):
     objects = FabricTypeManager()
 
     class Meta:
+        default_permissions = ()
+        permissions = ()
         verbose_name = _("fabric type")
         verbose_name_plural = _("fabric types")
 

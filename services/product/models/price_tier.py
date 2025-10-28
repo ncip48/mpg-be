@@ -36,10 +36,16 @@ class ProductPriceTier(get_subid_model()):
     """
     ProductPriceTier model
     """
-    product = models.ForeignKey("product.Product", on_delete=models.CASCADE, related_name="price_tiers")
+
+    product = models.ForeignKey(
+        "product.Product", on_delete=models.CASCADE, related_name="price_tiers"
+    )
     variant_type = models.ForeignKey(
-        ProductVariantType, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name="price_tiers"
+        ProductVariantType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="price_tiers",
     )
     min_qty = models.PositiveIntegerField()
     max_qty = models.PositiveIntegerField(null=True, blank=True)
@@ -51,10 +57,12 @@ class ProductPriceTier(get_subid_model()):
     objects = ProductPriceTierManager()
 
     class Meta:
+        default_permissions = ()
+        permissions = ()
         verbose_name = _("price tier")
         verbose_name_plural = _("price tiers")
         ordering = ["min_qty"]
         unique_together = ("product", "variant_type", "min_qty", "max_qty")
 
     def __str__(self):
-        return f"{self.product.name} - {self.variant_type.code if self.variant_type else "(std)"} ({self.min_qty}-{self.max_qty or '∞'})"
+        return f"{self.product.name} - {self.variant_type.code if self.variant_type else '(std)'} ({self.min_qty}-{self.max_qty or '∞'})"

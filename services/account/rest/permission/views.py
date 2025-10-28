@@ -13,38 +13,45 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "PermissionListView",
-)
+__all__ = ("PermissionListView",)
+
 
 class PermissionListView(APIView):
     """
     A view to list all available permissions in the system.
     Accessible only by superusers.
     """
+
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         tags=["Permissions"],
         operation_description="List all available permissions in the system, grouped by app. Accessible only by superusers.",
-        responses={200: "A dictionary of app labels mapping to lists of permissions (pk, name, codename)."}
+        responses={
+            200: "A dictionary of app labels mapping to lists of permissions (pk, name, codename)."
+        },
     )
     def get(self, request, format=None):
         """
-        Return a list of all permissions, grouped by app.
+        Return a list of all permissions, grouped by app,
+        excluding system apps like admin, auth, etc.
         """
-        permissions = Permission.objects.all().select_related('content_type')
+        excluded_apps = {"admin", "auth", "contenttypes", "debug_toolbar", "sessions"}
+        permissions = Permission.objects.all().select_related("content_type")
+
         grouped_permissions = {}
+
         for perm in permissions:
             app_label = perm.content_type.app_label
-            if app_label not in grouped_permissions:
-                grouped_permissions[app_label] = []
+            if app_label in excluded_apps:
+                continue  # skip unwanted apps
 
-            grouped_permissions[app_label].append({
-                'pk': perm.id,
-                'name': perm.name,
-                'codename': f"{app_label}.{perm.codename}"
-            })
+            grouped_permissions.setdefault(app_label, []).append(
+                {
+                    "pk": perm.id,
+                    "name": perm.name,
+                    "codename": f"{app_label}.{perm.codename}",
+                }
+            )
 
         return Response(grouped_permissions)
-
