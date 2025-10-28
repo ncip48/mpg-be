@@ -105,6 +105,7 @@ class Order(get_subid_model()):
     objects = OrderManager()
 
     class Meta:
+        default_permissions = ()
         permissions = [
             # --- Marketplace Order Permissions ---
             ("can_add_order_marketplace", "Can add marketplace order"),
