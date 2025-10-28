@@ -399,6 +399,7 @@ class OrderDetailSerializer(BaseModelSerializer):
         fields = [
             "pk",
             "order_type",
+            "convection_name",
             "customer",
             "priority_status",
             "status",

@@ -33,22 +33,34 @@ class OrderExtraCostManager(_OrderExtraCostManagerBase):
 
 
 class OrderExtraCost(get_subid_model()):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="extra_costs")
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="extra_costs"
+    )
     description = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField(default=1)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    type = models.CharField(max_length=20, choices=[
-        ("ongkir", "Biaya Ongkos Kirim"),
-        ("charge", "Biaya Tambahan"),
-        ("discount", "Diskon"),
-        ("promo", "Promo"),
-    ], default="charge")
-    
+    type = models.CharField(
+        max_length=20,
+        choices=[
+            ("ongkir", "Biaya Ongkos Kirim"),
+            ("charge", "Biaya Tambahan"),
+            ("discount", "Diskon"),
+            ("promo", "Promo"),
+        ],
+        default="charge",
+    )
+
     objects = OrderExtraCostManager()
-    
+
     def __str__(self):
         return f"ExtraCost {self.pk} for Order {self.order.pk}: {self.description}"
-    
+
+    class Meta:
+        default_permissions = ()
+        permissions = ()
+        verbose_name = _("Extra Cost")
+        verbose_name_plural = _("Extra Costs")
+
     @property
     def total_amount(self):
         if self.quantity is not None and self.amount is not None:

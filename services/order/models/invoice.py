@@ -34,7 +34,9 @@ class InvoiceManager(_InvoiceManagerBase):
 
 class Invoice(get_subid_model()):
     invoice_no = models.CharField(max_length=50, unique=True)
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="invoice")
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="invoice"
+    )
     issued_date = models.DateField()
     delivery_date = models.DateField()
     is_deposit_invoice = models.BooleanField(
@@ -42,14 +44,24 @@ class Invoice(get_subid_model()):
         help_text=_("Indicates if this invoice is for a down payment"),
     )
     note = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=[
-        ("unpaid", "Unpaid"),
-        ("paid", "Paid"),
-        ("cancelled", "Cancelled"),
-        ("partial", "Partial (Deposit)"),
-    ], default="unpaid")
-    
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("unpaid", "Unpaid"),
+            ("paid", "Paid"),
+            ("cancelled", "Cancelled"),
+            ("partial", "Partial (Deposit)"),
+        ],
+        default="unpaid",
+    )
+
     objects = InvoiceManager()
-    
+
+    class Meta:
+        default_permissions = ()
+        permissions = ()
+        verbose_name = "Invoice"
+        verbose_name_plural = "Invoices"
+
     def __str__(self):
         return f"Invoice {self.invoice_no} for Order {self.order.pk}"

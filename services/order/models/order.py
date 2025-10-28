@@ -104,6 +104,20 @@ class Order(get_subid_model()):
 
     objects = OrderManager()
 
+    class Meta:
+        permissions = [
+            # --- Marketplace Order Permissions ---
+            ("can_add_order_marketplace", "Can add marketplace order"),
+            ("can_view_order_marketplace", "Can view marketplace order"),
+            ("can_change_order_marketplace", "Can change marketplace order"),
+            ("can_delete_order_marketplace", "Can delete marketplace order"),
+            # --- Deposit Permissions ---
+            ("can_add_deposit", "Can add deposit"),
+            ("can_view_deposit", "Can view deposit"),
+            ("can_change_deposit", "Can change deposit"),
+            ("can_delete_deposit", "Can delete deposit"),
+        ]
+
     def __str__(self):
         return f"Order {self.pk} - {self.customer} ({self.status})"
 

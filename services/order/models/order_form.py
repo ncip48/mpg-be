@@ -61,6 +61,8 @@ class OrderForm(get_subid_model()):
     objects = OrderFormManager()
 
     class Meta:
+        default_permissions = ()
+        permissions = ()
         verbose_name = "Order Form"
         verbose_name_plural = "Order Forms"
 

@@ -34,8 +34,9 @@ class ProductManager(_ProductManagerBase):
 
 class Product(get_subid_model()):
     """
-    Product models 
+    Product models
     """
+
     name = models.CharField(_("name"), max_length=150, unique=True)
     printer = models.ForeignKey(
         "printer.Printer",
@@ -51,10 +52,7 @@ class Product(get_subid_model()):
     )
     sku = models.CharField(_("SKU"), max_length=64, unique=True)
     image = models.ImageField(
-        _("image"),
-        upload_to=product_image_upload_path,
-        blank=True,
-        null=True
+        _("image"), upload_to=product_image_upload_path, blank=True, null=True
     )
     created = models.DateTimeField(_("created"), auto_now_add=True)
     updated = models.DateTimeField(_("updated"), auto_now=True)

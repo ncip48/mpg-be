@@ -39,16 +39,25 @@ class OrderItemManager(_OrderItemManagerBase):
 class OrderItem(get_subid_model()):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="items")
-    fabric_type = models.ForeignKey(FabricType, on_delete=models.CASCADE, related_name="items")
+    fabric_type = models.ForeignKey(
+        FabricType, on_delete=models.CASCADE, related_name="items"
+    )
     variant_type = models.ForeignKey(
-        ProductVariantType, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name="items"
+        ProductVariantType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="items",
     )
     price = models.DecimalField(max_digits=12, decimal_places=2)
     quantity = models.PositiveIntegerField()
-    
+
     objects = OrderItemManager()
-    
+
+    class Meta:
+        default_permissions = ()
+        permissions = ()
+
     def __str__(self):
         return (
             f"OrderItem {self.pk} "
