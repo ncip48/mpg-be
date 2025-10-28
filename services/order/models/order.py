@@ -91,8 +91,8 @@ class Order(get_subid_model()):
     estimated_shipping_date = models.DateField(blank=True, null=True)
 
     # For CS2
-    reminder_one = models.DateField(default=False)
-    reminder_two = models.DateField(default=False)
+    reminder_one = models.DateField(blank=True, null=True)
+    reminder_two = models.DateField(blank=True, null=True)
     is_expired = models.BooleanField(default=False)
     is_paid_off = models.BooleanField(default=False)
     note = models.TextField(blank=True, null=True)
