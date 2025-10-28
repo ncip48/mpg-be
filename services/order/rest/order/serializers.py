@@ -457,7 +457,9 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
             "invoice",
             # CS2
             "reminder_one",
+            "is_reminder_one",
             "reminder_two",
+            "is_reminder_two",
             "is_expired",
             "is_paid_off",
             "note",
@@ -496,10 +498,10 @@ class OrderMarketplaceListSerializer(BaseModelSerializer):
             "order_choice",
             "estimated_shipping_date",
             # CS2
-            "reminder_one",
-            "reminder_two",
-            "is_expired",
-            "is_paid_off",
+            # "reminder_one",
+            # "reminder_two",
+            # "is_expired",
+            # "is_paid_off",
             "note",
             "shipping_courier",
         ]

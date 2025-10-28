@@ -106,3 +106,11 @@ class Order(get_subid_model()):
 
     def __str__(self):
         return f"Order {self.pk} - {self.customer} ({self.status})"
+
+    @property
+    def is_reminder_one(self):
+        return self.reminder_one is not None
+
+    @property
+    def is_reminder_two(self):
+        return self.reminder_two is not None
