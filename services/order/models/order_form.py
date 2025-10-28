@@ -4,10 +4,9 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+# from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
-from services.customer.models.customer import Customer
 
 if TYPE_CHECKING:
     pass
@@ -31,11 +30,12 @@ _OrderFormManagerBase = models.Manager.from_queryset(OrderFormQuerySet)  # type:
 class OrderFormManager(_OrderFormManagerBase):
     pass
 
+
 class OrderForm(get_subid_model()):
     order = models.ForeignKey(
         "order.Order",  # assuming your app name is 'order'
         on_delete=models.CASCADE,
-        related_name="order_forms"
+        related_name="order_forms",
     )
     team_name = models.CharField(max_length=255, null=True, blank=True)
 
@@ -57,7 +57,7 @@ class OrderForm(get_subid_model()):
     logo_chest_left = models.CharField(max_length=255, null=True, blank=True)
     logo_back = models.CharField(max_length=255, null=True, blank=True)
     logo_pants = models.CharField(max_length=255, null=True, blank=True)
-    
+
     objects = OrderFormManager()
 
     class Meta:

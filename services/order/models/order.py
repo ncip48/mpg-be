@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+# from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
 from services.customer.models.customer import Customer

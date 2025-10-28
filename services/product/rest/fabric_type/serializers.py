@@ -2,7 +2,8 @@ from __future__ import annotations
 from django.db import transaction
 from rest_framework import serializers
 from typing import TYPE_CHECKING
-from django.utils.translation import gettext_lazy as _
+
+# from django.utils.translation import gettext_lazy as _
 import logging
 from core.common.serializers import BaseModelSerializer
 from services.product.models.fabric_price import FabricPrice
@@ -14,6 +15,7 @@ from services.product.rest.variant_type.serializers import (
 
 if TYPE_CHECKING:
     pass
+
 
 logger = logging.getLogger(__name__)
 

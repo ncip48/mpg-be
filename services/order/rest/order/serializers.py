@@ -1,7 +1,8 @@
 from __future__ import annotations
 from rest_framework import serializers
 from typing import TYPE_CHECKING
-from django.utils.translation import gettext_lazy as _
+
+# from django.utils.translation import gettext_lazy as _
 import logging
 from core.common.serializers import BaseModelSerializer
 from services.customer.models.customer import Customer
@@ -171,7 +172,6 @@ class OrderCreateSerializer(BaseModelSerializer):
                     self.fields[field_name].required = False
 
     def create(self, validated_data):
-        from decimal import Decimal
         from django.utils import timezone
         from django.db import transaction
 
@@ -229,7 +229,7 @@ class OrderCreateSerializer(BaseModelSerializer):
                 # Generate invoice
                 today = timezone.now().date()
                 invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
-                invoice = Invoice.objects.create(
+                Invoice.objects.create(
                     status="partial" if is_deposit else "draft",
                     invoice_no=invoice_no,
                     order=order,

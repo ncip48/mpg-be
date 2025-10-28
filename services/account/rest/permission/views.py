@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from django.utils.translation import gettext_lazy as _
+
+# from django.utils.translation import gettext_lazy as _
 import logging
 from django.contrib.auth.models import Permission
 from rest_framework.permissions import IsAuthenticated
