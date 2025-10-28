@@ -33,7 +33,14 @@ class OrderManager(_OrderManagerBase):
 
 
 class Order(get_subid_model()):
-    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, related_name="orders", null=True, blank=True)
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.SET_NULL,
+        related_name="orders",
+        null=True,
+        blank=True,
+    )
+    convection_name = models.CharField(max_length=150, blank=True, null=True)
     order_type = models.CharField(
         max_length=20,
         choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")],
@@ -41,7 +48,7 @@ class Order(get_subid_model()):
     priority_status = models.CharField(
         max_length=20,
         choices=[("reguler", "Reguler"), ("urgent", "Urgent")],
-        default="reguler"
+        default="reguler",
     )
     status = models.CharField(
         max_length=20,
@@ -51,10 +58,12 @@ class Order(get_subid_model()):
             ("in_production", "In Production"),
             ("completed", "Completed"),
         ],
-        default="draft"
+        default="draft",
     )
-    deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    
+    deposit_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
+    )
+
     # Marketplace Form
     user_name = models.CharField(max_length=150, blank=True, null=True)
     order_number = models.CharField(max_length=100, blank=True, null=True)
@@ -80,7 +89,7 @@ class Order(get_subid_model()):
         null=True,
     )
     estimated_shipping_date = models.DateField(blank=True, null=True)
-    
+
     # For CS2
     reminder_one = models.BooleanField(default=False)
     reminder_two = models.BooleanField(default=False)
@@ -88,12 +97,12 @@ class Order(get_subid_model()):
     is_paid_off = models.BooleanField(default=False)
     note = models.TextField(blank=True, null=True)
     shipping_courier = models.CharField(max_length=100, blank=True, null=True)
-    
+
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    
+
     objects = OrderManager()
-    
+
     def __str__(self):
         return f"Order {self.pk} - {self.customer} ({self.status})"

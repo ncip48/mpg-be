@@ -17,14 +17,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "OrderItemInputSerializer",
-    "OrderCreateSerializer"
-)
+__all__ = ("OrderItemInputSerializer", "OrderCreateSerializer")
+
 
 class OrderExtraCostSerializer(BaseModelSerializer):
     total_amount = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = OrderExtraCost
         fields = [
@@ -35,7 +33,7 @@ class OrderExtraCostSerializer(BaseModelSerializer):
             "total_amount",
             "type",
         ]
-        
+
     def to_representation(self, instance):
         result = super().to_representation(instance)
         amount = result.get("amount")
@@ -49,9 +47,14 @@ class OrderExtraCostSerializer(BaseModelSerializer):
             except (ValueError, TypeError):
                 pass
         return result
-        
+
     def get_total_amount(self, obj):
-        if hasattr(obj, 'quantity') and hasattr(obj, 'amount') and obj.quantity is not None and obj.amount is not None:
+        if (
+            hasattr(obj, "quantity")
+            and hasattr(obj, "amount")
+            and obj.quantity is not None
+            and obj.amount is not None
+        ):
             total = obj.quantity * obj.amount
             # Format: no .0 if integer
             if total == int(total):
@@ -61,17 +64,21 @@ class OrderExtraCostSerializer(BaseModelSerializer):
 
 
 class OrderItemInputSerializer(BaseModelSerializer):
-    product = serializers.SlugRelatedField(slug_field="subid", queryset=Product.objects.all())
-    fabric_type = serializers.SlugRelatedField(slug_field="subid", queryset=FabricType.objects.all())
+    product = serializers.SlugRelatedField(
+        slug_field="subid", queryset=Product.objects.all()
+    )
+    fabric_type = serializers.SlugRelatedField(
+        slug_field="subid", queryset=FabricType.objects.all()
+    )
     variant_type = serializers.SlugRelatedField(
         slug_field="subid",
         queryset=ProductVariantType.objects.all(),
         required=False,
-        allow_null=True
+        allow_null=True,
     )
     quantity = serializers.IntegerField(min_value=1)
     # price = serializers.DecimalField(max_digits=12, decimal_places=2)
-    
+
     class Meta:
         model = OrderItem
         fields = (
@@ -85,18 +92,25 @@ class OrderItemInputSerializer(BaseModelSerializer):
 
 class OrderCreateSerializer(BaseModelSerializer):
     is_deposit = serializers.BooleanField(default=False)
-    customer = serializers.SlugRelatedField(slug_field="subid", queryset=Customer.objects.all())
-    order_type = serializers.ChoiceField(choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")])
-    priority_status = serializers.ChoiceField(choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler")
+    customer = serializers.SlugRelatedField(
+        slug_field="subid", queryset=Customer.objects.all()
+    )
+    order_type = serializers.ChoiceField(
+        choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")]
+    )
+    priority_status = serializers.ChoiceField(
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
+    )
     items = OrderItemInputSerializer(many=True)
     delivery_date = serializers.DateField(required=False)
     note = serializers.CharField(required=False, allow_blank=True)
     extra_costs = OrderExtraCostSerializer(many=True, required=False)
-    
+
     class Meta:
         model = Order
         fields = (
             "is_deposit",
+            "convection_name",
             "customer",
             "order_type",
             "priority_status",
@@ -112,7 +126,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             "estimated_shipping_date",
             "deposit_amount",
         )
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         data = self.initial_data if hasattr(self, "initial_data") else {}
@@ -142,6 +156,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         else:
             # 'customer' and 'items' are required, others are not
             self.fields["customer"].required = True
+            self.fields["convection_name"].required = True
             self.fields["items"].required = True
             self.fields["deposit_amount"].required = True
             extra_mkt_fields = [
@@ -225,6 +240,7 @@ class OrderCreateSerializer(BaseModelSerializer):
 
         return order
 
+
 class OrderItemListSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()
     fabric_type = serializers.CharField(source="fabric_type.name")
@@ -232,8 +248,14 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ["product_name", "fabric_type", "price", "quantity", "subtotal",]
-    
+        fields = [
+            "product_name",
+            "fabric_type",
+            "price",
+            "quantity",
+            "subtotal",
+        ]
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         price = data.get("price")
@@ -247,10 +269,12 @@ class OrderItemListSerializer(serializers.ModelSerializer):
             except (TypeError, ValueError):
                 pass
         return data
-    
+
     def get_product_name(self, instance):
         product = getattr(instance, "product", None)
-        product_display_name = getattr(product, "name", str(product)) if product else None
+        product_display_name = (
+            getattr(product, "name", str(product)) if product else None
+        )
 
         variant_type = getattr(instance, "variant_type", None)
         variant_code = getattr(variant_type, "code", None) if variant_type else None
@@ -259,11 +283,12 @@ class OrderItemListSerializer(serializers.ModelSerializer):
             return f"{variant_code}. {product_display_name}"
         return product_display_name
 
+
 class InvoiceSummarySerializer(BaseModelSerializer):
     total_invoice = serializers.SerializerMethodField()
     total_extra_cost = serializers.SerializerMethodField()
     grand_total = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Invoice
         fields = [
@@ -276,7 +301,7 @@ class InvoiceSummarySerializer(BaseModelSerializer):
             "grand_total",
             "status",
         ]
-        
+
     def get_total_extra_cost(self, obj):
         # Get total of extra costs related to this invoice's order
         order = obj.order if hasattr(obj, "order") else None
@@ -290,7 +315,7 @@ class InvoiceSummarySerializer(BaseModelSerializer):
                 return int(total)
             return float(total)
         return 0
-    
+
     def get_total_invoice(self, obj):
         # Calculate total invoice from related order items
         order = getattr(obj, "order", None)
@@ -312,6 +337,7 @@ class InvoiceSummarySerializer(BaseModelSerializer):
         if grand_total == int(grand_total):
             return int(grand_total)
         return float(grand_total)
+
 
 class OrderListSerializer(BaseModelSerializer):
     customer = CustomerSerializer(read_only=True)
@@ -346,7 +372,7 @@ class OrderListSerializer(BaseModelSerializer):
             "shipping_courier",
             "deposit_amount",
         ]
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         deposit_amount = data.get("deposit_amount")
@@ -395,7 +421,7 @@ class OrderDetailSerializer(BaseModelSerializer):
             "shipping_courier",
             "deposit_amount",
         ]
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         deposit_amount = data.get("deposit_amount")
@@ -409,7 +435,8 @@ class OrderDetailSerializer(BaseModelSerializer):
             except (TypeError, ValueError):
                 pass
         return data
-    
+
+
 class OrderKonveksiListSerializer(BaseModelSerializer):
     customer = CustomerSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
@@ -436,7 +463,7 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
             "shipping_courier",
             "deposit_amount",
         ]
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         deposit_amount = data.get("deposit_amount")
@@ -450,7 +477,8 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
             except (TypeError, ValueError):
                 pass
         return data
-    
+
+
 class OrderMarketplaceListSerializer(BaseModelSerializer):
     class Meta:
         model = Order
