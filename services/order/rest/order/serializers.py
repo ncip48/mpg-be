@@ -457,9 +457,9 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
             "invoice",
             # CS2
             "reminder_one",
-            "is_reminder_one",
+            # "is_reminder_one",
             "reminder_two",
-            "is_reminder_two",
+            # "is_reminder_two",
             "is_expired",
             "is_paid_off",
             "note",
