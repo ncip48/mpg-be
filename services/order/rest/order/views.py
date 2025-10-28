@@ -26,7 +26,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image,
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Image,
 )
 from django.http import HttpResponse
 
@@ -35,19 +40,26 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "OrderViewSet",
-)
+__all__ = ("OrderViewSet",)
+
 
 class OrderViewSet(BaseViewSet):
     required_perms = [
-        "order.add_order",
-        "order.change_order",
-        "order.delete_order",
-        "order.view_order",
+        "order.can_add_deposit",
+        "order.can_change_deposit",
+        "order.can_delete_deposit",
+        "order.can_view_deposit",
+        "order.can_add_order_marketplace",
+        "order.can_change_order_marketplace",
+        "order.can_delete_order_marketplace",
+        "order.can_view_order_marketplace",
     ]
     my_tags = ["Orders"]
-    queryset = Order.objects.select_related("customer", "invoice").prefetch_related("items").order_by("-created")
+    queryset = (
+        Order.objects.select_related("customer", "invoice")
+        .prefetch_related("items")
+        .order_by("-created")
+    )
     lookup_field = "subid"
     serializer_class = OrderListSerializer
     filterset_fields = [
@@ -63,25 +75,31 @@ class OrderViewSet(BaseViewSet):
     serializer_map = {
         "create": OrderCreateSerializer,
         "konveksi": OrderKonveksiListSerializer,
-        "marketplace": OrderMarketplaceListSerializer
+        "marketplace": OrderMarketplaceListSerializer,
     }
-    
+
     def get_serializer_class(self):
         """
         Returns the appropriate serializer class based on the current action.
         Defaults to `serializer_class` if no match in `serializer_map`.
         """
         # Handle "list" with query param same as before
-        if self.action == "list" and self.request.query_params.get("order_type") == "konveksi":
+        if (
+            self.action == "list"
+            and self.request.query_params.get("order_type") == "konveksi"
+        ):
             serializer = self.serializer_map.get("konveksi", None)
             if serializer is not None:
                 return serializer
 
-        if self.action == "list" and self.request.query_params.get("order_type") == "marketplace":
+        if (
+            self.action == "list"
+            and self.request.query_params.get("order_type") == "marketplace"
+        ):
             serializer = self.serializer_map.get("marketplace", None)
             if serializer is not None:
                 return serializer
-            
+
         if self.action == "retrieve":
             obj = self.get_object()
             if hasattr(obj, "order_type"):
@@ -93,11 +111,13 @@ class OrderViewSet(BaseViewSet):
                     serializer = self.serializer_map.get("marketplace", None)
                     if serializer is not None:
                         return serializer
-        
+
         return self.serializer_map.get(self.action, self.serializer_class)
 
     def create(self, request, *args, **kwargs):
-        serializer = OrderCreateSerializer(data=request.data, context={"request": request})
+        serializer = OrderCreateSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
@@ -110,7 +130,9 @@ class OrderViewSet(BaseViewSet):
         order = invoice.order
 
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm)
+        doc = SimpleDocTemplate(
+            buffer, pagesize=A4, rightMargin=20 * mm, leftMargin=20 * mm
+        )
         elements = []
         styles = getSampleStyleSheet()
 
@@ -125,7 +147,12 @@ class OrderViewSet(BaseViewSet):
             elements.append(Paragraph("<b>EZ Sportswear</b>", styles["Title"]))
         elements.append(Spacer(1, 5))
 
-        elements.append(Paragraph("Ruko Palma Grandia RG2/17-19<br/>Kota Surabaya, Indonesia", styles["Normal"]))
+        elements.append(
+            Paragraph(
+                "Ruko Palma Grandia RG2/17-19<br/>Kota Surabaya, Indonesia",
+                styles["Normal"],
+            )
+        )
         elements.append(Spacer(1, 10))
 
         # --- CUSTOMER + INVOICE INFO ---
@@ -135,7 +162,7 @@ class OrderViewSet(BaseViewSet):
             ["<b>Tanggal Invoice</b>", f": {invoice.issued_date.strftime('%d %B %Y')}"],
             ["<b>Tanggal Kirim</b>", f": {invoice.delivery_date.strftime('%d %B %Y')}"],
         ]
-        info_table = Table(info_data, colWidths=[100*mm, 70*mm])
+        info_table = Table(info_data, colWidths=[100 * mm, 70 * mm])
         elements.append(info_table)
         elements.append(Spacer(1, 10))
 
@@ -148,7 +175,7 @@ class OrderViewSet(BaseViewSet):
         for i, item in enumerate(order.items.all(), start=1):
             subtotal = item.subtotal
             total_invoice += subtotal
-            
+
             # Get basic fields safely
             product = getattr(item, "product", None)
             product_name = getattr(product, "name", "-")
@@ -161,30 +188,42 @@ class OrderViewSet(BaseViewSet):
                 display_name = f"{variant_code} - {product_name}"
             else:
                 display_name = product_name
-                
-            item_data.append([
-                str(i),
-                display_name,
-                item.fabric_type.name,
-                f"Rp {item.price:,.0f}",
-                str(item.quantity),
-                f"Rp {subtotal:,.0f}",
-            ])
+
+            item_data.append(
+                [
+                    str(i),
+                    display_name,
+                    item.fabric_type.name,
+                    f"Rp {item.price:,.0f}",
+                    str(item.quantity),
+                    f"Rp {subtotal:,.0f}",
+                ]
+            )
 
         for _ in range(len(item_data), 12):  # fill empty rows to look consistent
             item_data.append(["", "", "", "", "", ""])
 
-        t = Table(item_data, colWidths=[15*mm, 60*mm, 35*mm, 30*mm, 20*mm, 30*mm])
-        t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E6EEF8")),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
-            ("ALIGN", (3, 1), (-1, -1), "RIGHT"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ]))
+        t = Table(
+            item_data, colWidths=[15 * mm, 60 * mm, 35 * mm, 30 * mm, 20 * mm, 30 * mm]
+        )
+        t.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E6EEF8")),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+                    ("ALIGN", (3, 1), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ]
+            )
+        )
         elements.append(t)
 
         elements.append(Spacer(1, 5))
-        elements.append(Paragraph(f"<b>TOTAL INVOICE :</b> Rp {total_invoice:,.0f}", styles["Normal"]))
+        elements.append(
+            Paragraph(
+                f"<b>TOTAL INVOICE :</b> Rp {total_invoice:,.0f}", styles["Normal"]
+            )
+        )
         elements.append(Spacer(1, 10))
 
         # --- EXTRA COSTS ---
@@ -196,47 +235,69 @@ class OrderViewSet(BaseViewSet):
         for i, cost in enumerate(order.extra_costs.all(), start=1):
             total_extra_cost += cost.total_amount
             color = colors.red if cost.total_amount < 0 else colors.black
-            extra_data.append([
-                str(i),
-                cost.description,
-                str(cost.quantity),
-                f"Rp {cost.total_amount:,.0f}",
-            ])
+            extra_data.append(
+                [
+                    str(i),
+                    cost.description,
+                    str(cost.quantity),
+                    f"Rp {cost.total_amount:,.0f}",
+                ]
+            )
 
-        t2 = Table(extra_data, colWidths=[15*mm, 100*mm, 20*mm, 30*mm])
-        t2.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E6EEF8")),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
-            ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ]))
+        t2 = Table(extra_data, colWidths=[15 * mm, 100 * mm, 20 * mm, 30 * mm])
+        t2.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E6EEF8")),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.black),
+                    ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ]
+            )
+        )
         elements.append(t2)
 
         grand_total = total_invoice + total_extra_cost
         elements.append(Spacer(1, 5))
-        elements.append(Paragraph(f"<b>TOTAL BIAYA LAIN :</b> Rp {total_extra_cost:,.0f}", styles["Normal"]))
-        elements.append(Paragraph(f"<b>SUB TOTAL PEMBELIAN :</b> Rp {grand_total:,.0f}", styles["Heading3"]))
+        elements.append(
+            Paragraph(
+                f"<b>TOTAL BIAYA LAIN :</b> Rp {total_extra_cost:,.0f}",
+                styles["Normal"],
+            )
+        )
+        elements.append(
+            Paragraph(
+                f"<b>SUB TOTAL PEMBELIAN :</b> Rp {grand_total:,.0f}",
+                styles["Heading3"],
+            )
+        )
         elements.append(Spacer(1, 10))
 
         # --- FOOTER NOTE ---
         note_data = [
-            [Paragraph(
-                "<b>KETERANGAN :</b><br/>"
-                "Pembayaran transfer ke rekening <b>BCA 5105250123</b> a.n. <b>PT. Mardi Persada Group</b><br/><br/>"
-                "Jika pembayaran DP tidak dilakukan segera, maka resiko antrian design penuh "
-                "(yang menyebabkan proses pengerjaan mundur) akan ditanggung pembeli.",
-                styles["Normal"]
-            )]
+            [
+                Paragraph(
+                    "<b>KETERANGAN :</b><br/>"
+                    "Pembayaran transfer ke rekening <b>BCA 5105250123</b> a.n. <b>PT. Mardi Persada Group</b><br/><br/>"
+                    "Jika pembayaran DP tidak dilakukan segera, maka resiko antrian design penuh "
+                    "(yang menyebabkan proses pengerjaan mundur) akan ditanggung pembeli.",
+                    styles["Normal"],
+                )
+            ]
         ]
-        note_table = Table(note_data, colWidths=[180*mm])
-        note_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.yellow),
-            ("BOX", (0, 0), (-1, -1), 1, colors.black),
-            ("LEFTPADDING", (0, 0), (-1, -1), 5),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
+        note_table = Table(note_data, colWidths=[180 * mm])
+        note_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.yellow),
+                    ("BOX", (0, 0), (-1, -1), 1, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         elements.append(note_table)
 
         # --- BUILD ---
