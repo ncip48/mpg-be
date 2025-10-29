@@ -139,7 +139,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         if isinstance(is_deposit, str):
             is_deposit = is_deposit.lower() == "true"
 
-        if not is_deposit and order_type == "marketplace":
+        if order_type == "marketplace":
             # 'customer' and 'items' are NOT required
             self.fields["customer"].required = False
             self.fields["items"].required = False
@@ -158,8 +158,12 @@ class OrderCreateSerializer(BaseModelSerializer):
             # 'customer' and 'items' are required, others are not
             self.fields["customer"].required = True
             self.fields["convection_name"].required = True
-            self.fields["items"].required = True
-            self.fields["deposit_amount"].required = True
+            if not is_deposit:
+                self.fields["items"].required = False
+                self.fields["deposit_amount"].required = False
+            else:
+                self.fields["items"].required = True
+                self.fields["deposit_amount"].required = True
             extra_mkt_fields = [
                 "user_name",
                 "order_number",
