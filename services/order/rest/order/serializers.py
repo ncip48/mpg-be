@@ -353,6 +353,7 @@ class OrderListSerializer(BaseModelSerializer):
         model = Order
         fields = [
             "pk",
+            "convection_name",
             "order_type",
             "customer",
             "priority_status",
