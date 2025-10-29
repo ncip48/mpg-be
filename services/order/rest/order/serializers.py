@@ -197,7 +197,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             else:
                 # Normal konveksi order
                 customer = validated_data.pop("customer")
-                items_data = validated_data.pop("items")
+                items_data = validated_data.pop("items", [])
 
                 order = Order.objects.create(
                     status="deposit" if is_deposit else "draft",
@@ -439,6 +439,12 @@ class OrderDetailSerializer(BaseModelSerializer):
                     data["deposit_amount"] = dep_float
             except (TypeError, ValueError):
                 pass
+
+        # --- 2️⃣ Remove invoice if items is empty ---
+        items = data.get("items") or []
+        if not items:
+            data["invoice"] = None
+
         return data
 
 
@@ -484,6 +490,12 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
                     data["deposit_amount"] = dep_float
             except (TypeError, ValueError):
                 pass
+
+        # --- Set invoice to null if items is empty ---
+        items = data.get("items") or []
+        if not items:
+            data["invoice"] = None
+
         return data
 
 
