@@ -28,6 +28,7 @@ class ProductVariantTypeSerializer(BaseModelSerializer):
             "pk",
             "code",
             "name",
+            "unit",
             "note",
             "created",
             "updated",
