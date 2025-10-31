@@ -132,6 +132,34 @@ class OrderViewSet(BaseViewSet):
         response_serializer = OrderDetailSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
+    def update(self, request, *args, **kwargs):
+        """
+        Handle full update (PUT)
+        """
+        instance = self.get_object()
+        serializer = OrderCreateSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+
+        response_serializer = OrderDetailSerializer(order)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Handle partial update (PATCH)
+        """
+        instance = self.get_object()
+        serializer = OrderCreateSerializer(
+            instance, data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+
+        response_serializer = OrderDetailSerializer(order)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
     def generate_invoice_pdf(self, request, subid):
         invoice = get_object_or_404(Invoice, order__subid=subid)
         order = invoice.order
