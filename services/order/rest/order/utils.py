@@ -46,14 +46,66 @@ def get_dynamic_item_price(
     return final_price, subtotal
 
 
-def mapping_product_qty(unit: str) -> int:
+def mapping_product_sum(unit: str) -> int:
     """
-    Mapping product quantity based on unit.
+    Mapping product quantity (bobot) based on product name.
     """
     match unit.lower():
-        case "stel":
-            return 2
         case "atasan":
             return 1
+        case "stel":
+            return 2
+        case "polo atasan":
+            return 2
+        case "polo stel":
+            return 3
+        case "baseball atasan":
+            return 1
+        case "baseball stel":
+            return 2
+        case "nrl atasan":
+            return 1
+        case "nrl stel":
+            return 2
+        case "atasan bb":
+            return 2
+        case "stelan bb":
+            return 3
+        case "celana":
+            return 1
+        case "ss":
+            return 1
+        case "atasan berlengan":
+            return 1
+        case "polo":
+            return 2
+        case "stel berlengan":
+            return 2
+        case "ss lengan panjang":
+            return 1
+        case "ss lengan pendek":
+            return 1
+        case "atasan lengan panjang":
+            return 1
+        case "sample":
+            return 1
+        case "atasan oversize":
+            return 1
+        case "baseball":
+            return 1
         case _:
-            raise ValueError(f"Invalid unit '{unit}'")
+            return 1
+
+
+def get_qty(unit: str, qty: int | float):
+    return mapping_product_sum(unit) * qty
+
+
+def get_qty_value(unit: str | None, qty: int | float) -> float:
+    """
+    Returns computed quantity based on mapping multiplier.
+    If unit is None, uses multiplier 1.
+    """
+    if not unit:
+        return qty
+    return mapping_product_sum(unit) * qty
