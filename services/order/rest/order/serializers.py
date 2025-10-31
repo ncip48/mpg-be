@@ -351,7 +351,7 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
     def get_unit(self, instance):
         variant_type = getattr(instance, "variant_type", None)
-        return variant_type.unit.upper() if variant_type else None
+        return variant_type.unit.upper() if variant_type and variant_type.unit else None
 
 
 class InvoiceSummarySerializer(BaseModelSerializer):
