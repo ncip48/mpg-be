@@ -244,6 +244,66 @@ class OrderCreateSerializer(BaseModelSerializer):
 
         return order
 
+    def update(self, instance, validated_data):
+        """
+        Handle updating existing order (including optional items/extra_costs).
+        """
+        from django.db import transaction
+
+        is_deposit = validated_data.pop(
+            "is_deposit", getattr(instance, "is_deposit", False)
+        )
+        note = validated_data.pop("note", "")
+        delivery_date = validated_data.pop("delivery_date", None)
+        items_data = validated_data.pop("items", None)
+        extra_costs_data = validated_data.pop("extra_costs", None)
+
+        with transaction.atomic():
+            # Update main order fields
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+
+            # Update order items if provided and non-empty
+            if items_data is not None:
+                # Clear and recreate items
+                instance.items.all().delete()
+                for item_data in items_data:
+                    product = item_data["product"]
+                    fabric_type = item_data["fabric_type"]
+                    variant_type = item_data.get("variant_type")
+                    qty = item_data["quantity"]
+
+                    final_price, _ = get_dynamic_item_price(
+                        product, fabric_type, variant_type, qty
+                    )
+
+                    OrderItem.objects.create(
+                        order=instance,
+                        product=product,
+                        fabric_type=fabric_type,
+                        variant_type=variant_type,
+                        quantity=qty,
+                        price=final_price,
+                    )
+
+            # Update extra costs if provided
+            if extra_costs_data is not None:
+                instance.extra_costs.all().delete()
+                for extra_data in extra_costs_data:
+                    OrderExtraCost.objects.create(order=instance, **extra_data)
+
+            # Update invoice if exists
+            invoice = getattr(instance, "invoice", None)
+            if invoice:
+                if delivery_date:
+                    invoice.delivery_date = delivery_date
+                if note:
+                    invoice.note = note
+                invoice.save()
+
+        return instance
+
 
 class OrderItemListSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()

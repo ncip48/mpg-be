@@ -71,11 +71,18 @@ class OrderViewSet(BaseViewSet):
         "is_paid_off",
         "is_expired",
     ]
-    search_fields = ["order_number", "customer__name", "invoice__invoice_no"]
+    search_fields = [
+        "order_number",
+        "customer__name",
+        "invoice__invoice_no",
+        "user_name",
+    ]
     serializer_map = {
         "create": OrderCreateSerializer,
         "konveksi": OrderKonveksiListSerializer,
         "marketplace": OrderMarketplaceListSerializer,
+        "partial_update": OrderCreateSerializer,
+        "update": OrderCreateSerializer,
     }
 
     def get_serializer_class(self):
