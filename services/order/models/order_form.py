@@ -32,8 +32,8 @@ class OrderFormManager(_OrderFormManagerBase):
 
 
 class OrderForm(get_subid_model()):
-    order = models.ForeignKey(
-        "order.Order",  # assuming your app name is 'order'
+    order_item = models.ForeignKey(
+        "order.OrderItem",  # assuming your app name is 'order'
         on_delete=models.CASCADE,
         related_name="order_forms",
     )
@@ -62,9 +62,14 @@ class OrderForm(get_subid_model()):
 
     class Meta:
         default_permissions = ()
-        permissions = ()
+        permissions = [
+            ("view_orderform", "Can view order form"),
+            ("add_orderform", "Can add order form"),
+            ("change_orderform", "Can change order form"),
+            ("delete_orderform", "Can delete order form"),
+        ]
         verbose_name = "Order Form"
         verbose_name_plural = "Order Forms"
 
     def __str__(self):
-        return f"Form for {self.order} ({self.team_name or 'No Team Name'})"
+        return f"Form for ({self.team_name or 'No Team Name'})"

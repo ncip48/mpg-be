@@ -21,8 +21,63 @@ logger = logging.getLogger(__name__)
 __all__ = ("OrderItemInputSerializer", "OrderCreateSerializer")
 
 
-class OrderExtraCostSerializer(BaseModelSerializer):
+# --- 1. New Helper Function ---
+def _format_decimal_as_int_or_float(value):
+    """Converts a float/Decimal to int if it has no decimal part."""
+    if value is None:
+        return None
+    try:
+        float_val = float(value)
+        if float_val == int(float_val):
+            return int(float_val)
+        return float_val
+    except (ValueError, TypeError):
+        return value  # Return original value if conversion fails
+
+
+# --- 2. New Mixin for to_representation logic ---
+class FloatToIntRepresentationMixin:
+    """
+    Mixin to convert specified float/decimal fields to int in representation
+    if they are whole numbers.
+
+    Serializers using this mixin should define:
+    float_to_int_fields = ["field1", "field2"]
+    """
+
+    float_to_int_fields = []
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field_name in self.float_to_int_fields:
+            if field_name in data:
+                value = data.get(field_name)
+                data[field_name] = _format_decimal_as_int_or_float(value)
+        return data
+
+
+# --- 3. New Mixin for nulling invoice ---
+class NullInvoiceIfEmptyItemsMixin:
+    """
+    Mixin to set 'invoice' to None in representation if 'items' is empty.
+    """
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        items = data.get("items") or []
+        if not items:
+            data["invoice"] = None
+        return data
+
+
+# --- Refactored Serializers ---
+
+
+class OrderExtraCostSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     total_amount = serializers.SerializerMethodField()
+
+    # Define fields for the mixin
+    float_to_int_fields = ["amount"]
 
     class Meta:
         model = OrderExtraCost
@@ -35,19 +90,7 @@ class OrderExtraCostSerializer(BaseModelSerializer):
             "type",
         ]
 
-    def to_representation(self, instance):
-        result = super().to_representation(instance)
-        amount = result.get("amount")
-        # If amount is float but integer (e.g. 20.0), return as int
-        if amount is not None:
-            try:
-                if float(amount) == int(float(amount)):
-                    result["amount"] = int(float(amount))
-                else:
-                    result["amount"] = float(amount)
-            except (ValueError, TypeError):
-                pass
-        return result
+    # to_representation is now handled by FloatToIntRepresentationMixin
 
     def get_total_amount(self, obj):
         if (
@@ -57,10 +100,8 @@ class OrderExtraCostSerializer(BaseModelSerializer):
             and obj.amount is not None
         ):
             total = obj.quantity * obj.amount
-            # Format: no .0 if integer
-            if total == int(total):
-                return int(total)
-            return float(total)
+            # Use the helper function
+            return _format_decimal_as_int_or_float(total)
         return None
 
 
@@ -139,18 +180,21 @@ class OrderCreateSerializer(BaseModelSerializer):
         if isinstance(is_deposit, str):
             is_deposit = is_deposit.lower() == "true"
 
+        # --- Refactored: Define marketplace fields once ---
+        _MARKETPLACE_FIELDS = [
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
+        ]
+
         if order_type == "marketplace":
             # 'customer' and 'items' are NOT required
             self.fields["customer"].required = False
             self.fields["items"].required = False
             # The following become required
-            extra_required = [
-                "user_name",
-                "order_number",
-                "marketplace",
-                "order_choice",
-                "estimated_shipping_date",
-            ]
+            extra_required = _MARKETPLACE_FIELDS  # Use constant
             for field_name in extra_required:
                 if field_name in self.fields:
                     self.fields[field_name].required = True
@@ -164,16 +208,53 @@ class OrderCreateSerializer(BaseModelSerializer):
             else:
                 self.fields["items"].required = True
                 self.fields["deposit_amount"].required = True
-            extra_mkt_fields = [
-                "user_name",
-                "order_number",
-                "marketplace",
-                "order_choice",
-                "estimated_shipping_date",
-            ]
+
+            extra_mkt_fields = _MARKETPLACE_FIELDS  # Use constant
             for field_name in extra_mkt_fields:
                 if field_name in self.fields:
                     self.fields[field_name].required = False
+
+    # --- 4. New Helper methods for create/update ---
+
+    def _create_order_items(self, order, items_data):
+        """Helper to create order items."""
+        for item_data in items_data:
+            product = item_data["product"]
+            fabric_type = item_data["fabric_type"]
+            variant_type = item_data.get("variant_type")
+            qty = item_data["quantity"]
+
+            final_price, _ = get_dynamic_item_price(
+                product, fabric_type, variant_type, qty
+            )
+
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                fabric_type=fabric_type,
+                variant_type=variant_type,
+                quantity=qty,
+                price=final_price,
+            )
+
+    def _create_extra_costs(self, order, extra_costs_data):
+        """Helper to create extra costs."""
+        for extra_data in extra_costs_data:
+            OrderExtraCost.objects.create(order=order, **extra_data)
+
+    def _update_order_items(self, instance, items_data):
+        """Helper to update order items (delete and recreate)."""
+        if items_data is not None:
+            instance.items.all().delete()
+            self._create_order_items(instance, items_data)
+
+    def _update_extra_costs(self, instance, extra_costs_data):
+        """Helper to update extra costs (delete and recreate)."""
+        if extra_costs_data is not None:
+            instance.extra_costs.all().delete()
+            self._create_extra_costs(instance, extra_costs_data)
+
+    # --- End Helper methods ---
 
     def create(self, validated_data):
         from django.utils import timezone
@@ -194,6 +275,7 @@ class OrderCreateSerializer(BaseModelSerializer):
                     created_by=self.context["request"].user,
                     **validated_data,
                 )
+                # Note: Marketplace orders (in this logic) don't get items/costs/invoice on create
             else:
                 # Normal konveksi order
                 customer = validated_data.pop("customer")
@@ -206,29 +288,10 @@ class OrderCreateSerializer(BaseModelSerializer):
                     **validated_data,
                 )
 
-                # Create order items
-                for item_data in items_data:
-                    product = item_data["product"]
-                    fabric_type = item_data["fabric_type"]
-                    variant_type = item_data.get("variant_type")
-                    qty = item_data["quantity"]
-
-                    final_price, _ = get_dynamic_item_price(
-                        product, fabric_type, variant_type, qty
-                    )
-
-                    OrderItem.objects.create(
-                        order=order,
-                        product=product,
-                        fabric_type=fabric_type,
-                        variant_type=variant_type,
-                        quantity=qty,
-                        price=final_price,
-                    )
-
-                # Create extra costs (shared)
-                for extra_data in extra_costs_data:
-                    OrderExtraCost.objects.create(order=order, **extra_data)
+                # --- Refactored: Use helper methods ---
+                self._create_order_items(order, items_data)
+                self._create_extra_costs(order, extra_costs_data)
+                # --- End Refactored ---
 
                 # Generate invoice
                 today = timezone.now().date()
@@ -264,34 +327,12 @@ class OrderCreateSerializer(BaseModelSerializer):
                 setattr(instance, attr, value)
             instance.save()
 
-            # Update order items if provided and non-empty
-            if items_data is not None:
-                # Clear and recreate items
-                instance.items.all().delete()
-                for item_data in items_data:
-                    product = item_data["product"]
-                    fabric_type = item_data["fabric_type"]
-                    variant_type = item_data.get("variant_type")
-                    qty = item_data["quantity"]
-
-                    final_price, _ = get_dynamic_item_price(
-                        product, fabric_type, variant_type, qty
-                    )
-
-                    OrderItem.objects.create(
-                        order=instance,
-                        product=product,
-                        fabric_type=fabric_type,
-                        variant_type=variant_type,
-                        quantity=qty,
-                        price=final_price,
-                    )
-
+            # --- Refactored: Use helper methods ---
+            # Update order items if provided
+            self._update_order_items(instance, items_data)
             # Update extra costs if provided
-            if extra_costs_data is not None:
-                instance.extra_costs.all().delete()
-                for extra_data in extra_costs_data:
-                    OrderExtraCost.objects.create(order=instance, **extra_data)
+            self._update_extra_costs(instance, extra_costs_data)
+            # --- End Refactored ---
 
             # Update invoice if exists
             invoice = getattr(instance, "invoice", None)
@@ -305,11 +346,16 @@ class OrderCreateSerializer(BaseModelSerializer):
         return instance
 
 
-class OrderItemListSerializer(serializers.ModelSerializer):
+class OrderItemListSerializer(
+    FloatToIntRepresentationMixin, serializers.ModelSerializer
+):
     product_name = serializers.SerializerMethodField()
     fabric_type = serializers.CharField(source="fabric_type.name")
     unit = serializers.SerializerMethodField()
     # subtotal = serializers.SerializerMethodField()
+
+    # Define fields for the mixin
+    float_to_int_fields = ["price"]
 
     class Meta:
         model = OrderItem
@@ -322,19 +368,7 @@ class OrderItemListSerializer(serializers.ModelSerializer):
             "subtotal",
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        price = data.get("price")
-        if price is not None:
-            try:
-                price_float = float(price)
-                if price_float == int(price_float):
-                    data["price"] = int(price_float)
-                else:
-                    data["price"] = price_float
-            except (TypeError, ValueError):
-                pass
-        return data
+    # to_representation is now handled by FloatToIntRepresentationMixin
 
     def get_product_name(self, instance):
         product = getattr(instance, "product", None)
@@ -380,10 +414,8 @@ class InvoiceSummarySerializer(BaseModelSerializer):
             for extra_cost in order.extra_costs.all():
                 if extra_cost.quantity is not None and extra_cost.amount is not None:
                     total += extra_cost.quantity * float(extra_cost.amount)
-            # Return as int if there's no decimal part
-            if total == int(total):
-                return int(total)
-            return float(total)
+            # Use the helper function
+            return _format_decimal_as_int_or_float(total)
         return 0
 
     def get_total_invoice(self, obj):
@@ -394,9 +426,8 @@ class InvoiceSummarySerializer(BaseModelSerializer):
             for item in order.items.all():
                 if item.price is not None and item.quantity is not None:
                     total += float(item.price) * item.quantity
-            if total == int(total):
-                return int(total)
-            return float(total)
+            # Use the helper function
+            return _format_decimal_as_int_or_float(total)
         return 0
 
     def get_grand_total(self, obj):
@@ -404,16 +435,18 @@ class InvoiceSummarySerializer(BaseModelSerializer):
         total_invoice = self.get_total_invoice(obj)
         total_extra_cost = self.get_total_extra_cost(obj)
         grand_total = total_invoice + total_extra_cost
-        if grand_total == int(grand_total):
-            return int(grand_total)
-        return float(grand_total)
+        # Use the helper function
+        return _format_decimal_as_int_or_float(grand_total)
 
 
-class OrderListSerializer(BaseModelSerializer):
+class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     customer = CustomerSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+
+    # Define fields for the mixin
+    float_to_int_fields = ["deposit_amount"]
 
     class Meta:
         model = Order
@@ -444,26 +477,19 @@ class OrderListSerializer(BaseModelSerializer):
             "deposit_amount",
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        deposit_amount = data.get("deposit_amount")
-        if deposit_amount is not None:
-            try:
-                dep_float = float(deposit_amount)
-                if dep_float == int(dep_float):
-                    data["deposit_amount"] = int(dep_float)
-                else:
-                    data["deposit_amount"] = dep_float
-            except (TypeError, ValueError):
-                pass
-        return data
+    # to_representation is now handled by FloatToIntRepresentationMixin
 
 
-class OrderDetailSerializer(BaseModelSerializer):
+class OrderDetailSerializer(
+    FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
+):
     customer = CustomerSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
     extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+
+    # Define fields for the FloatToInt mixin
+    float_to_int_fields = ["deposit_amount"]
 
     class Meta:
         model = Order
@@ -494,34 +520,23 @@ class OrderDetailSerializer(BaseModelSerializer):
             "deposit_amount",
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        deposit_amount = data.get("deposit_amount")
-        if deposit_amount is not None:
-            try:
-                dep_float = float(deposit_amount)
-                if dep_float == int(dep_float):
-                    data["deposit_amount"] = int(dep_float)
-                else:
-                    data["deposit_amount"] = dep_float
-            except (TypeError, ValueError):
-                pass
-
-        # --- 2️⃣ Remove invoice if items is empty ---
-        items = data.get("items") or []
-        if not items:
-            data["invoice"] = None
-
-        return data
+    # to_representation is now handled by both mixins
+    # 1. FloatToIntRepresentationMixin handles deposit_amount
+    # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
 
 
-class OrderKonveksiListSerializer(BaseModelSerializer):
+class OrderKonveksiListSerializer(
+    FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
+):
     customer = CustomerSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
     detail_order = serializers.SerializerMethodField()
     qty = serializers.SerializerMethodField()
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+
+    # Define fields for the FloatToInt mixin
+    float_to_int_fields = ["deposit_amount"]
 
     class Meta:
         model = Order
@@ -549,25 +564,9 @@ class OrderKonveksiListSerializer(BaseModelSerializer):
             "qty",
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        deposit_amount = data.get("deposit_amount")
-        if deposit_amount is not None:
-            try:
-                dep_float = float(deposit_amount)
-                if dep_float == int(dep_float):
-                    data["deposit_amount"] = int(dep_float)
-                else:
-                    data["deposit_amount"] = dep_float
-            except (TypeError, ValueError):
-                pass
-
-        # --- Set invoice to null if items is empty ---
-        items = data.get("items") or []
-        if not items:
-            data["invoice"] = None
-
-        return data
+    # to_representation is now handled by both mixins
+    # 1. FloatToIntRepresentationMixin handles deposit_amount
+    # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
 
     def get_detail_order(self, obj):
         """
