@@ -294,16 +294,16 @@ class OrderCreateSerializer(BaseModelSerializer):
                 # --- End Refactored ---
 
                 # Generate invoice
-                today = timezone.now().date()
-                invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
-                Invoice.objects.create(
-                    status="partial" if is_deposit else "draft",
-                    invoice_no=invoice_no,
-                    order=order,
-                    issued_date=today,
-                    delivery_date=delivery_date,
-                    note=note,
-                )
+                # today = timezone.now().date()
+                # invoice_no = f"SI.{today.year}.{today.month:02d}.{order.pk:05d}"
+                # Invoice.objects.create(
+                #     status="partial" if is_deposit else "draft",
+                #     invoice_no=invoice_no,
+                #     order=order,
+                #     issued_date=today,
+                #     delivery_date=delivery_date,
+                #     note=note,
+                # )
 
         return order
 
