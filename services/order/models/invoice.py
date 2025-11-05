@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
 from services.order.models.order import Order
+from services.deposit.models import Deposit
 
 if TYPE_CHECKING:
     pass
@@ -35,7 +36,10 @@ class InvoiceManager(_InvoiceManagerBase):
 class Invoice(get_subid_model()):
     invoice_no = models.CharField(max_length=50, unique=True)
     order = models.OneToOneField(
-        Order, on_delete=models.CASCADE, related_name="invoice"
+        Order, on_delete=models.CASCADE, related_name="invoice", null=True, blank=True
+    )
+    deposit = models.OneToOneField(
+        Deposit, on_delete=models.CASCADE, related_name="invoice", null=True, blank=True
     )
     issued_date = models.DateField()
     delivery_date = models.DateField()

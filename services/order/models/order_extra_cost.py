@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
 from services.order.models.order import Order
+from services.deposit.models import Deposit
 
 if TYPE_CHECKING:
     pass
@@ -34,7 +35,18 @@ class OrderExtraCostManager(_OrderExtraCostManagerBase):
 
 class OrderExtraCost(get_subid_model()):
     order = models.ForeignKey(
-        Order, on_delete=models.CASCADE, related_name="extra_costs"
+        Order,
+        on_delete=models.CASCADE,
+        related_name="extra_costs",
+        null=True,
+        blank=True,
+    )
+    deposit = models.ForeignKey(
+        Deposit,
+        on_delete=models.CASCADE,
+        related_name="extra_costs",
+        null=True,
+        blank=True,
     )
     description = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField(default=1)

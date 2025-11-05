@@ -12,6 +12,7 @@ from services.order.models.order import Order
 from services.product.models.fabric_type import FabricType
 from services.product.models.product import Product
 from services.product.models.variant_type import ProductVariantType
+from services.deposit.models import Deposit
 
 if TYPE_CHECKING:
     pass
@@ -37,7 +38,12 @@ class OrderItemManager(_OrderItemManagerBase):
 
 
 class OrderItem(get_subid_model()):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="items", null=True, blank=True
+    )
+    deposit = models.ForeignKey(
+        Deposit, on_delete=models.CASCADE, related_name="items", null=True, blank=True
+    )
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="items")
     fabric_type = models.ForeignKey(
         FabricType, on_delete=models.CASCADE, related_name="items"
