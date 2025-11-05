@@ -68,4 +68,4 @@ class Invoice(get_subid_model()):
         verbose_name_plural = "Invoices"
 
     def __str__(self):
-        return f"Invoice {self.invoice_no} for Order {self.order.pk}"
+        return f"Invoice {self.invoice_no} for Deposit {self.deposit.pk}"

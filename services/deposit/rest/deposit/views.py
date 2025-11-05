@@ -154,7 +154,7 @@ class DepositViewSet(BaseViewSet):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def generate_invoice_pdf(self, request, subid):
-        invoice = get_object_or_404(Invoice, order__subid=subid)
+        invoice = get_object_or_404(Invoice, deposit__subid=subid)
         order = invoice.order
 
         buffer = BytesIO()

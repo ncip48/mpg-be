@@ -230,6 +230,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             Invoice.objects.create(
                 status="partial",
                 invoice_no=invoice_no,
+                order=order,
                 deposit=deposit,
                 issued_date=today,
                 delivery_date=delivery_date,
