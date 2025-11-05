@@ -7,6 +7,7 @@ import logging
 from core.common.serializers import BaseModelSerializer
 from services.customer.models.customer import Customer
 from services.customer.rest.customer.serializers import CustomerSerializer
+from services.deposit.models.deposit import Deposit
 from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
@@ -514,6 +515,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
     # detail_order = serializers.SerializerMethodField()
     # qty = serializers.SerializerMethodField()
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+    is_deposit = serializers.SerializerMethodField()
 
     # Define fields for the FloatToInt mixin
     float_to_int_fields = ["deposit_amount"]
@@ -523,6 +525,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
         fields = [
             "pk",
             "order_type",
+            "is_deposit",
             "convection_name",
             "customer",
             "priority_status",
@@ -537,6 +540,9 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
     # to_representation is now handled by both mixins
     # 1. FloatToIntRepresentationMixin handles deposit_amount
     # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
+    #
+    def get_is_deposit(self, obj):
+        return Deposit.objects.filter(order=obj).exists()
 
     def get_detail_order(self, obj):
         """
