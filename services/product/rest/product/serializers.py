@@ -56,6 +56,9 @@ class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
     variant_code = serializers.CharField(
         source="variant_type.code", read_only=True, default=None
     )
+    variant_unit = serializers.CharField(
+        source="variant_type.unit", read_only=True, default=None
+    )
 
     # ✅ instead of nested fabric_adjustments, now show master fabric prices
     fabric_prices = serializers.SerializerMethodField()
@@ -66,6 +69,7 @@ class ProductPriceTierNestedSerializer(serializers.ModelSerializer):
             "variant_type",
             "variant_name",
             "variant_code",
+            "variant_unit",
             "min_qty",
             "max_qty",
             "base_price",
@@ -231,6 +235,7 @@ class ProductSerializer(BaseModelSerializer):
             variant_type = t.get("variant_type")
             variant_name = t.get("variant_name")
             variant_code = t.get("variant_code")
+            variant_unit = t.get("variant_unit")
 
             key = variant_type or "base"
             if key not in grouped:
@@ -240,6 +245,7 @@ class ProductSerializer(BaseModelSerializer):
                         "pk": variant_type,
                         "name": variant_name,
                         "code": variant_code,
+                        "unit": variant_unit,
                     },
                     "name": f"{variant_code}. {instance.name}"
                     if variant_type

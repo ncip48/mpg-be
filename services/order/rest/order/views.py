@@ -68,8 +68,6 @@ class OrderViewSet(BaseViewSet):
         "status",
         "marketplace",
         "order_choice",
-        "is_paid_off",
-        "is_expired",
     ]
     search_fields = [
         "order_number",

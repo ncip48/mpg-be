@@ -143,10 +143,10 @@ class OrderCreateSerializer(BaseModelSerializer):
     priority_status = serializers.ChoiceField(
         choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
     )
-    items = OrderItemInputSerializer(many=True)
-    delivery_date = serializers.DateField(required=False)
-    note = serializers.CharField(required=False, allow_blank=True)
-    extra_costs = OrderExtraCostSerializer(many=True, required=False)
+    # items = OrderItemInputSerializer(many=True)
+    # delivery_date = serializers.DateField(required=False)
+    # note = serializers.CharField(required=False, allow_blank=True)
+    # extra_costs = OrderExtraCostSerializer(many=True, required=False)
 
     class Meta:
         model = Order
@@ -156,17 +156,17 @@ class OrderCreateSerializer(BaseModelSerializer):
             "customer",
             "order_type",
             "priority_status",
-            "items",
-            "delivery_date",
-            "note",
-            "extra_costs",
+            # "items",
+            # "delivery_date",
+            # "note",
+            # "extra_costs",
             # Marketplace fields
             "user_name",
             "order_number",
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
-            "deposit_amount",
+            # "deposit_amount",
         )
 
     def __init__(self, *args, **kwargs):
@@ -192,7 +192,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         if order_type == "marketplace":
             # 'customer' and 'items' are NOT required
             self.fields["customer"].required = False
-            self.fields["items"].required = False
+            # self.fields["items"].required = False
             # The following become required
             extra_required = _MARKETPLACE_FIELDS  # Use constant
             for field_name in extra_required:
@@ -202,12 +202,12 @@ class OrderCreateSerializer(BaseModelSerializer):
             # 'customer' and 'items' are required, others are not
             self.fields["customer"].required = True
             self.fields["convection_name"].required = True
-            if not is_deposit:
-                self.fields["items"].required = False
-                self.fields["deposit_amount"].required = False
-            else:
-                self.fields["items"].required = True
-                self.fields["deposit_amount"].required = True
+            # if not is_deposit:
+            # self.fields["items"].required = False
+            # self.fields["deposit_amount"].required = False
+            # else:
+            # self.fields["items"].required = True
+            # self.fields["deposit_amount"].required = True
 
             extra_mkt_fields = _MARKETPLACE_FIELDS  # Use constant
             for field_name in extra_mkt_fields:
@@ -458,8 +458,8 @@ class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "priority_status",
             "status",
             "created",
-            "items",
-            "invoice",
+            # "items",
+            # "invoice",
             # "extra_costs",
             # Marketplace fields
             "user_name",
@@ -467,72 +467,15 @@ class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
-            # CS2
-            "reminder_one",
-            "reminder_two",
-            "is_expired",
-            "is_paid_off",
-            "note",
-            "shipping_courier",
-            "deposit_amount",
         ]
 
     # to_representation is now handled by FloatToIntRepresentationMixin
 
 
-class OrderDetailSerializer(
-    FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
-):
+class OrderDetailSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     customer = CustomerSerializer(read_only=True)
-    invoice = InvoiceSummarySerializer(read_only=True)
-    items = OrderItemListSerializer(many=True, read_only=True)
-    extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
-
-    # Define fields for the FloatToInt mixin
-    float_to_int_fields = ["deposit_amount"]
-
-    class Meta:
-        model = Order
-        fields = [
-            "pk",
-            "order_type",
-            "convection_name",
-            "customer",
-            "priority_status",
-            "status",
-            "created",
-            "items",
-            "invoice",
-            "extra_costs",
-            # Marketplace fields
-            "user_name",
-            "order_number",
-            "marketplace",
-            "order_choice",
-            "estimated_shipping_date",
-            # CS 2
-            "reminder_one",
-            "reminder_two",
-            "is_expired",
-            "is_paid_off",
-            "note",
-            "shipping_courier",
-            "deposit_amount",
-        ]
-
-    # to_representation is now handled by both mixins
-    # 1. FloatToIntRepresentationMixin handles deposit_amount
-    # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
-
-
-class OrderKonveksiListSerializer(
-    FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
-):
-    customer = CustomerSerializer(read_only=True)
-    invoice = InvoiceSummarySerializer(read_only=True)
-    items = OrderItemListSerializer(many=True, read_only=True)
-    detail_order = serializers.SerializerMethodField()
-    qty = serializers.SerializerMethodField()
+    # invoice = InvoiceSummarySerializer(read_only=True)
+    # items = OrderItemListSerializer(many=True, read_only=True)
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
 
     # Define fields for the FloatToInt mixin
@@ -548,20 +491,47 @@ class OrderKonveksiListSerializer(
             "priority_status",
             "status",
             "created",
-            "items",
-            "invoice",
-            # CS2
-            "reminder_one",
-            # "is_reminder_one",
-            "reminder_two",
-            # "is_reminder_two",
-            "is_expired",
-            "is_paid_off",
-            "note",
-            "shipping_courier",
-            "deposit_amount",
-            "detail_order",
-            "qty",
+            # "items",
+            # "invoice",
+            # "extra_costs",
+            # Marketplace fields
+            "user_name",
+            "order_number",
+            "marketplace",
+            "order_choice",
+            "estimated_shipping_date",
+        ]
+
+    # to_representation is now handled by both mixins
+    # 1. FloatToIntRepresentationMixin handles deposit_amount
+    # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
+
+
+class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
+    customer = CustomerSerializer(read_only=True)
+    # invoice = InvoiceSummarySerializer(read_only=True)
+    # items = OrderItemListSerializer(many=True, read_only=True)
+    # detail_order = serializers.SerializerMethodField()
+    # qty = serializers.SerializerMethodField()
+    # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+
+    # Define fields for the FloatToInt mixin
+    float_to_int_fields = ["deposit_amount"]
+
+    class Meta:
+        model = Order
+        fields = [
+            "pk",
+            "order_type",
+            "convection_name",
+            "customer",
+            "priority_status",
+            "status",
+            "created",
+            # "items",
+            # "invoice",
+            # "qty",
+            # "detail_order",
         ]
 
     # to_representation is now handled by both mixins
@@ -648,11 +618,4 @@ class OrderMarketplaceListSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
-            # CS2
-            # "reminder_one",
-            # "reminder_two",
-            # "is_expired",
-            # "is_paid_off",
-            "note",
-            "shipping_courier",
         ]
