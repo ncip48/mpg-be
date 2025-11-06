@@ -16,7 +16,7 @@ from services.order.rest.order.serializers import (
     OrderItemListSerializer,
     OrderKonveksiListSerializer,
 )
-from services.order.rest.order.utils import get_dynamic_item_price
+from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
 
 
 if TYPE_CHECKING:
@@ -271,6 +271,8 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
     extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+    detail_order = serializers.SerializerMethodField()
+    qty = serializers.SerializerMethodField()
 
     # Define fields for the mixin
     float_to_int_fields = ["deposit_amount"]
@@ -285,6 +287,8 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "items",
             "invoice",
             "extra_costs",
+            "detail_order",
+            "qty",
             # CS2
             "reminder_one",
             "reminder_two",
@@ -296,6 +300,69 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
         ]
 
     # to_representation is now handled by FloatToIntRepresentationMixin
+    def get_detail_order(self, obj):
+        """
+        Returns combined quantity string for an order.
+        Example outputs:
+            "3 ATASAN + 2 STEL"
+            "3 + 2 ATASAN"  (if some variant_type are null)
+        """
+        items = OrderItem.objects.filter(order=obj.order)
+        if not items.exists():
+            return None  # return None instead of ""
+
+        parts = []
+        last_unit = None
+        has_null_unit = False
+
+        for item in items:
+            qty = item.quantity or 0
+            unit = None
+
+            # Safely get variant_type.unit if exists
+            variant_type = getattr(item, "variant_type", None)
+            if variant_type and getattr(variant_type, "unit", None):
+                unit = str(variant_type.unit).upper().strip()
+                last_unit = unit
+            else:
+                has_null_unit = True
+
+            # Build string part
+            if unit:
+                parts.append(f"{qty} {unit}")
+            else:
+                parts.append(str(qty))
+
+        result = " + ".join(parts)
+        return result or None
+
+    def get_qty(self, obj):
+        """
+        Returns the total sum of all computed quantities in the order.
+
+        Example:
+            If items are:
+                - 3 ATASAN (1x multiplier)
+                - 2 STEL (2x multiplier)
+            Result = (3×1) + (2×2) = 7
+        """
+        items = OrderItem.objects.filter(order=obj.order)
+        if not items.exists():
+            return 0
+
+        total_qty = 0
+
+        for item in items:
+            qty = item.quantity or 0
+            unit = None
+
+            # Try to get unit name from variant_type
+            if getattr(item.variant_type, "unit", None):
+                unit = str(item.variant_type.unit).upper().strip()
+
+            total_qty += get_qty_value(unit, qty)
+
+        return total_qty
 
 
 class DepositDetailSerializer(
