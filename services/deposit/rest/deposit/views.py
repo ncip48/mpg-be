@@ -13,9 +13,9 @@ from core.common.viewsets import BaseViewSet
 from services.deposit.rest.deposit.filtersets import DepositFilterSet
 from services.order.models.invoice import Invoice
 from services.deposit.rest.deposit.serializers import (
-    OrderCreateSerializer,
-    OrderListSerializer,
-    OrderDetailSerializer,
+    DepositCreateSerializer,
+    DepositListSerializer,
+    DepositDetailSerializer,
 )
 from services.deposit.models import Deposit
 
@@ -56,11 +56,7 @@ class DepositViewSet(BaseViewSet):
         .order_by("-created")
     )
     lookup_field = "subid"
-    serializer_class = OrderListSerializer
-    # filterset_fields = [
-    #     "is_paid_off",
-    #     "is_expired",
-    # ]
+    serializer_class = DepositListSerializer
     filterset_class = DepositFilterSet
     search_fields = [
         "order_number",
@@ -69,20 +65,29 @@ class DepositViewSet(BaseViewSet):
         "user_name",
     ]
     serializer_map = {
-        "create": OrderCreateSerializer,
-        "partial_update": OrderCreateSerializer,
-        "update": OrderCreateSerializer,
+        "create": DepositCreateSerializer,
+        "partial_update": DepositCreateSerializer,
+        "update": DepositCreateSerializer,
     }
 
     def create(self, request, *args, **kwargs):
-        serializer = OrderCreateSerializer(
+        order_subid = request.data.get("order")
+
+        # 🔹 Validate order before serializer runs
+        if order_subid and Deposit.objects.filter(order__subid=order_subid).exists():
+            return Response(
+                {"detail": f"Order '{order_subid}' already deposited."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = DepositCreateSerializer(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
         # Use the same detail serializer for response
-        response_serializer = OrderDetailSerializer(order)
+        response_serializer = DepositDetailSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
@@ -90,13 +95,13 @@ class DepositViewSet(BaseViewSet):
         Handle full update (PUT)
         """
         instance = self.get_object()
-        serializer = OrderCreateSerializer(
+        serializer = DepositCreateSerializer(
             instance, data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
-        response_serializer = OrderDetailSerializer(order)
+        response_serializer = DepositDetailSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
@@ -104,13 +109,13 @@ class DepositViewSet(BaseViewSet):
         Handle partial update (PATCH)
         """
         instance = self.get_object()
-        serializer = OrderCreateSerializer(
+        serializer = DepositCreateSerializer(
             instance, data=request.data, partial=True, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
-        response_serializer = OrderDetailSerializer(order)
+        response_serializer = DepositDetailSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def generate_invoice_pdf(self, request, subid):

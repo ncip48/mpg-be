@@ -5,15 +5,19 @@ from typing import TYPE_CHECKING
 # from django.utils.translation import gettext_lazy as _
 import logging
 from core.common.serializers import BaseModelSerializer
-from services.customer.models.customer import Customer
-from services.customer.rest.customer.serializers import CustomerSerializer
 from services.deposit.models.deposit import Deposit
 from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
-from services.order.rest.order.serializers import OrderKonveksiListSerializer
-from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
-from services.product.models import ProductVariantType, Product, FabricType
+from services.order.rest.order.serializers import (
+    InvoiceSummarySerializer,
+    OrderExtraCostSerializer,
+    OrderItemInputSerializer,
+    OrderItemListSerializer,
+    OrderKonveksiListSerializer,
+)
+from services.order.rest.order.utils import get_dynamic_item_price
+
 
 if TYPE_CHECKING:
     pass
@@ -75,66 +79,7 @@ class NullInvoiceIfEmptyItemsMixin:
 # --- Refactored Serializers ---
 
 
-class OrderExtraCostSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
-    total_amount = serializers.SerializerMethodField()
-
-    # Define fields for the mixin
-    float_to_int_fields = ["amount"]
-
-    class Meta:
-        model = OrderExtraCost
-        fields = [
-            "pk",
-            "description",
-            "quantity",
-            "amount",
-            "total_amount",
-            "type",
-        ]
-
-    # to_representation is now handled by FloatToIntRepresentationMixin
-
-    def get_total_amount(self, obj):
-        if (
-            hasattr(obj, "quantity")
-            and hasattr(obj, "amount")
-            and obj.quantity is not None
-            and obj.amount is not None
-        ):
-            total = obj.quantity * obj.amount
-            # Use the helper function
-            return _format_decimal_as_int_or_float(total)
-        return None
-
-
-class OrderItemInputSerializer(BaseModelSerializer):
-    product = serializers.SlugRelatedField(
-        slug_field="subid", queryset=Product.objects.all()
-    )
-    fabric_type = serializers.SlugRelatedField(
-        slug_field="subid", queryset=FabricType.objects.all()
-    )
-    variant_type = serializers.SlugRelatedField(
-        slug_field="subid",
-        queryset=ProductVariantType.objects.all(),
-        required=False,
-        allow_null=True,
-    )
-    quantity = serializers.IntegerField(min_value=1)
-    # price = serializers.DecimalField(max_digits=12, decimal_places=2)
-
-    class Meta:
-        model = OrderItem
-        fields = (
-            "product",
-            "fabric_type",
-            "variant_type",
-            "quantity",
-            # "price",
-        )
-
-
-class OrderCreateSerializer(BaseModelSerializer):
+class DepositCreateSerializer(BaseModelSerializer):
     order = serializers.SlugRelatedField(
         slug_field="subid", queryset=Order.objects.all()
     )
@@ -279,7 +224,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         return instance
 
 
-class OrderItemListSerializer(
+class DepositItemListSerializer(
     FloatToIntRepresentationMixin, serializers.ModelSerializer
 ):
     product_name = serializers.SerializerMethodField()
@@ -321,58 +266,7 @@ class OrderItemListSerializer(
         return variant_type.unit.upper() if variant_type and variant_type.unit else None
 
 
-class InvoiceSummarySerializer(BaseModelSerializer):
-    total_invoice = serializers.SerializerMethodField()
-    total_extra_cost = serializers.SerializerMethodField()
-    grand_total = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Invoice
-        fields = [
-            "pk",
-            "invoice_no",
-            "issued_date",
-            "delivery_date",
-            "total_invoice",
-            "total_extra_cost",
-            "grand_total",
-            "status",
-        ]
-
-    def get_total_extra_cost(self, obj):
-        # Get total of extra costs related to this invoice's order
-        order = obj.order if hasattr(obj, "order") else None
-        if order and hasattr(order, "extra_costs"):
-            total = 0
-            for extra_cost in order.extra_costs.all():
-                if extra_cost.quantity is not None and extra_cost.amount is not None:
-                    total += extra_cost.quantity * float(extra_cost.amount)
-            # Use the helper function
-            return _format_decimal_as_int_or_float(total)
-        return 0
-
-    def get_total_invoice(self, obj):
-        # Calculate total invoice from related order items
-        order = getattr(obj, "order", None)
-        if order and hasattr(order, "items"):
-            total = 0
-            for item in order.items.all():
-                if item.price is not None and item.quantity is not None:
-                    total += float(item.price) * item.quantity
-            # Use the helper function
-            return _format_decimal_as_int_or_float(total)
-        return 0
-
-    def get_grand_total(self, obj):
-        # grand_total = total_invoice + total_extra_cost
-        total_invoice = self.get_total_invoice(obj)
-        total_extra_cost = self.get_total_extra_cost(obj)
-        grand_total = total_invoice + total_extra_cost
-        # Use the helper function
-        return _format_decimal_as_int_or_float(grand_total)
-
-
-class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
+class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     order = OrderKonveksiListSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
@@ -404,7 +298,7 @@ class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     # to_representation is now handled by FloatToIntRepresentationMixin
 
 
-class OrderDetailSerializer(
+class DepositDetailSerializer(
     FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
 ):
     # customer = CustomerSerializer(read_only=True)
