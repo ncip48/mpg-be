@@ -1,4 +1,5 @@
 from __future__ import annotations
+import datetime
 from rest_framework import serializers
 from typing import TYPE_CHECKING
 
@@ -101,6 +102,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             "note",
             "extra_costs",
             "deposit_amount",
+            "accepted_at",
         )
 
     # --- 4. New Helper methods for create/update ---
@@ -300,6 +302,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "shipping_courier",
             "deposit_amount",
             "accepted_at",
+            "estimate_sent",
         ]
 
     def get_estimate_sent(self, obj):
