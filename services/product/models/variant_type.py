@@ -38,6 +38,7 @@ class ProductVariantType(get_subid_model()):
     name = models.CharField(max_length=100)
     note = models.CharField(max_length=255, blank=True, null=True)
     unit = models.CharField(max_length=255, blank=True, null=True)
+    weight = models.PositiveIntegerField(default=0)
 
     created = models.DateTimeField(_("created"), auto_now_add=True)
     updated = models.DateTimeField(_("updated"), auto_now=True)

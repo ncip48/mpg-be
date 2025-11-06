@@ -354,13 +354,8 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
 
         for item in items:
             qty = item.quantity or 0
-            unit = None
 
-            # Try to get unit name from variant_type
-            if getattr(item.variant_type, "unit", None):
-                unit = str(item.variant_type.unit).upper().strip()
-
-            total_qty += get_qty_value(unit, qty)
+            total_qty += get_qty_value(item.variant_type.weight, qty)
 
         return total_qty
 

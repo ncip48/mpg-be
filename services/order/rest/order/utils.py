@@ -110,11 +110,11 @@ def get_qty(unit: str, qty: int | float):
     return mapping_product_sum(unit) * qty
 
 
-def get_qty_value(unit: str | None, qty: int | float) -> float:
+def get_qty_value(weight: int, qty: int | float) -> float:
     """
     Returns computed quantity based on mapping multiplier.
     If unit is None, uses multiplier 1.
     """
-    if not unit:
+    if not weight:
         return qty
-    return mapping_product_sum(unit) * qty
+    return weight * qty
