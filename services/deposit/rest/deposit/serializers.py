@@ -17,6 +17,7 @@ from services.order.rest.order.serializers import (
     OrderKonveksiListSerializer,
 )
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
+import holidays
 
 
 if TYPE_CHECKING:
@@ -272,6 +273,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
     detail_order = serializers.SerializerMethodField()
     qty = serializers.SerializerMethodField()
+    estimate_sent = serializers.SerializerMethodField()
 
     # Define fields for the mixin
     float_to_int_fields = ["deposit_amount"]
@@ -297,7 +299,36 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "note",
             "shipping_courier",
             "deposit_amount",
+            "accepted_at",
         ]
+
+    def get_estimate_sent(self, obj):
+        accepted_at = getattr(obj, "accepted_at", None)
+        lead_time = getattr(obj, "lead_time", 0)
+
+        if not accepted_at or not lead_time:
+            return None
+
+        # Use Indonesian public holidays
+        id_holidays = holidays.country_holidays("ID", years=accepted_at.year)
+
+        current_date = accepted_at
+        days_added = 0
+
+        while days_added < lead_time:
+            current_date += datetime.timedelta(days=1)
+
+            # Skip weekends (Saturday=5, Sunday=6)
+            if current_date.weekday() >= 5:
+                continue
+
+            # Skip Indonesian holidays
+            if current_date in id_holidays:
+                continue
+
+            days_added += 1
+
+        return current_date.strftime("%Y-%m-%d")
 
     # to_representation is now handled by FloatToIntRepresentationMixin
     def get_detail_order(self, obj):

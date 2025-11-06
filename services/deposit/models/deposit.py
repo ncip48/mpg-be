@@ -61,6 +61,7 @@ class Deposit(get_subid_model()):
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    accepted_at = models.DateTimeField(blank=True, null=True)
 
     objects = DepositManager()
 
