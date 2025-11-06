@@ -95,7 +95,7 @@ class DepositCreateSerializer(BaseModelSerializer):
         model = Deposit
         fields = (
             "order",
-            # "priority_status",
+            "priority_status",
             "items",
             "delivery_date",
             "note",
@@ -282,7 +282,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
         fields = [
             "pk",
             "order",
-            # "priority_status",
+            "priority_status",
             "created",
             "items",
             "invoice",
@@ -384,7 +384,7 @@ class DepositDetailSerializer(
             # "order_type",
             # "convection_name",
             # "customer",
-            # "priority_status",
+            "priority_status",
             # "status",
             "created",
             "items",

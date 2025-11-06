@@ -88,6 +88,7 @@ class Order(get_subid_model()):
         blank=True,
         null=True,
     )
+    quantity = models.PositiveIntegerField(default=0)
     estimated_shipping_date = models.DateField(blank=True, null=True)
 
     # For CS2

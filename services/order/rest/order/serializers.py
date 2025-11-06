@@ -167,6 +167,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            "quantity",
             # "deposit_amount",
         )
 
@@ -188,6 +189,7 @@ class OrderCreateSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            "quantity",
         ]
 
         if order_type == "marketplace":
@@ -528,7 +530,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
             "is_deposit",
             "convection_name",
             "customer",
-            "priority_status",
+            # "priority_status",
             "status",
             "created",
             # "items",
@@ -624,4 +626,5 @@ class OrderMarketplaceListSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            "quantity",
         ]
