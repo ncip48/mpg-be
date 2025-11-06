@@ -40,6 +40,7 @@ class Deposit(get_subid_model()):
         null=True,
         blank=True,
     )
+    lead_time = models.PositiveIntegerField(default=0)
     deposit_amount = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True
     )

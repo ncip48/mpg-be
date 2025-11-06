@@ -83,11 +83,10 @@ class DepositCreateSerializer(BaseModelSerializer):
     order = serializers.SlugRelatedField(
         slug_field="subid", queryset=Order.objects.all()
     )
-    # priority_status = serializers.ChoiceField(
-    #     choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
-    # )
+    priority_status = serializers.ChoiceField(
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
+    )
     items = OrderItemInputSerializer(many=True)
-    delivery_date = serializers.DateField(required=False)
     note = serializers.CharField(required=False, allow_blank=True)
     extra_costs = OrderExtraCostSerializer(many=True, required=False)
 
@@ -97,7 +96,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             "order",
             "priority_status",
             "items",
-            "delivery_date",
+            "lead_time",
             "note",
             "extra_costs",
             "deposit_amount",
@@ -290,6 +289,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "detail_order",
             "qty",
             # CS2
+            "lead_time",
             "reminder_one",
             "reminder_two",
             "is_expired",
