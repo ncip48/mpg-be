@@ -14,10 +14,8 @@ from services.deposit.rest.deposit.filtersets import DepositFilterSet
 from services.order.models.invoice import Invoice
 from services.deposit.rest.deposit.serializers import (
     OrderCreateSerializer,
-    OrderKonveksiListSerializer,
     OrderListSerializer,
     OrderDetailSerializer,
-    OrderMarketplaceListSerializer,
 )
 from services.deposit.models import Deposit
 
@@ -72,47 +70,9 @@ class DepositViewSet(BaseViewSet):
     ]
     serializer_map = {
         "create": OrderCreateSerializer,
-        "konveksi": OrderKonveksiListSerializer,
-        "marketplace": OrderMarketplaceListSerializer,
         "partial_update": OrderCreateSerializer,
         "update": OrderCreateSerializer,
     }
-
-    def get_serializer_class(self):
-        """
-        Returns the appropriate serializer class based on the current action.
-        Defaults to `serializer_class` if no match in `serializer_map`.
-        """
-        # Handle "list" with query param same as before
-        if (
-            self.action == "list"
-            and self.request.query_params.get("order_type") == "konveksi"
-        ):
-            serializer = self.serializer_map.get("konveksi", None)
-            if serializer is not None:
-                return serializer
-
-        if (
-            self.action == "list"
-            and self.request.query_params.get("order_type") == "marketplace"
-        ):
-            serializer = self.serializer_map.get("marketplace", None)
-            if serializer is not None:
-                return serializer
-
-        if self.action == "retrieve":
-            obj = self.get_object()
-            if hasattr(obj, "order_type"):
-                if obj.order_type == "konveksi":
-                    serializer = self.serializer_map.get("konveksi", None)
-                    if serializer is not None:
-                        return serializer
-                elif obj.order_type == "marketplace":
-                    serializer = self.serializer_map.get("marketplace", None)
-                    if serializer is not None:
-                        return serializer
-
-        return self.serializer_map.get(self.action, self.serializer_class)
 
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(

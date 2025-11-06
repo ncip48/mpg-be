@@ -43,11 +43,11 @@ class Deposit(get_subid_model()):
     deposit_amount = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True
     )
-    priority_status = models.CharField(
-        max_length=20,
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")],
-        default="reguler",
-    )
+    # priority_status = models.CharField(
+    #     max_length=20,
+    #     choices=[("reguler", "Reguler"), ("urgent", "Urgent")],
+    #     default="reguler",
+    # )
 
     # For CS2
     reminder_one = models.DateField(blank=True, null=True)

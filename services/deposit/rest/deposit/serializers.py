@@ -11,6 +11,7 @@ from services.deposit.models.deposit import Deposit
 from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
+from services.order.rest.order.serializers import OrderKonveksiListSerializer
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
 from services.product.models import ProductVariantType, Product, FabricType
 
@@ -137,9 +138,9 @@ class OrderCreateSerializer(BaseModelSerializer):
     order = serializers.SlugRelatedField(
         slug_field="subid", queryset=Order.objects.all()
     )
-    priority_status = serializers.ChoiceField(
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
-    )
+    # priority_status = serializers.ChoiceField(
+    #     choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
+    # )
     items = OrderItemInputSerializer(many=True)
     delivery_date = serializers.DateField(required=False)
     note = serializers.CharField(required=False, allow_blank=True)
@@ -149,7 +150,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         model = Deposit
         fields = (
             "order",
-            "priority_status",
+            # "priority_status",
             "items",
             "delivery_date",
             "note",
@@ -372,7 +373,7 @@ class InvoiceSummarySerializer(BaseModelSerializer):
 
 
 class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
-    # order = CustomerSerializer(read_only=True)
+    order = OrderKonveksiListSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
     extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
@@ -384,8 +385,8 @@ class OrderListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
         model = Deposit
         fields = [
             "pk",
-            # "order",
-            "priority_status",
+            "order",
+            # "priority_status",
             "created",
             "items",
             "invoice",
@@ -422,7 +423,7 @@ class OrderDetailSerializer(
             # "order_type",
             # "convection_name",
             # "customer",
-            "priority_status",
+            # "priority_status",
             # "status",
             "created",
             "items",
@@ -441,136 +442,3 @@ class OrderDetailSerializer(
     # to_representation is now handled by both mixins
     # 1. FloatToIntRepresentationMixin handles deposit_amount
     # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
-
-
-class OrderKonveksiListSerializer(
-    FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
-):
-    customer = CustomerSerializer(read_only=True)
-    invoice = InvoiceSummarySerializer(read_only=True)
-    items = OrderItemListSerializer(many=True, read_only=True)
-    detail_order = serializers.SerializerMethodField()
-    qty = serializers.SerializerMethodField()
-    # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
-
-    # Define fields for the FloatToInt mixin
-    float_to_int_fields = ["deposit_amount"]
-
-    class Meta:
-        model = Order
-        fields = [
-            "pk",
-            "order_type",
-            "convection_name",
-            "customer",
-            "priority_status",
-            "status",
-            "created",
-            "items",
-            "invoice",
-            # CS2
-            "reminder_one",
-            # "is_reminder_one",
-            "reminder_two",
-            # "is_reminder_two",
-            "is_expired",
-            "is_paid_off",
-            "note",
-            "shipping_courier",
-            "deposit_amount",
-            "detail_order",
-            "qty",
-        ]
-
-    # to_representation is now handled by both mixins
-    # 1. FloatToIntRepresentationMixin handles deposit_amount
-    # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
-
-    def get_detail_order(self, obj):
-        """
-        Returns combined quantity string for an order.
-        Example outputs:
-            "3 ATASAN + 2 STEL"
-            "3 + 2 ATASAN"  (if some variant_type are null)
-        """
-        items = OrderItem.objects.filter(order=obj)
-        if not items.exists():
-            return None  # return None instead of ""
-
-        parts = []
-        last_unit = None
-        has_null_unit = False
-
-        for item in items:
-            qty = item.quantity or 0
-            unit = None
-
-            # Safely get variant_type.unit if exists
-            variant_type = getattr(item, "variant_type", None)
-            if variant_type and getattr(variant_type, "unit", None):
-                unit = str(variant_type.unit).upper().strip()
-                last_unit = unit
-            else:
-                has_null_unit = True
-
-            # Build string part
-            if unit:
-                parts.append(f"{qty} {unit}")
-            else:
-                parts.append(str(qty))
-
-        result = " + ".join(parts)
-        return result or None
-
-    def get_qty(self, obj):
-        """
-        Returns the total sum of all computed quantities in the order.
-
-        Example:
-            If items are:
-                - 3 ATASAN (1x multiplier)
-                - 2 STEL (2x multiplier)
-            Result = (3×1) + (2×2) = 7
-        """
-        items = OrderItem.objects.filter(order=obj)
-        if not items.exists():
-            return 0
-
-        total_qty = 0
-
-        for item in items:
-            qty = item.quantity or 0
-            unit = None
-
-            # Try to get unit name from variant_type
-            if getattr(item.variant_type, "unit", None):
-                unit = str(item.variant_type.unit).upper().strip()
-
-            total_qty += get_qty_value(unit, qty)
-
-        return total_qty
-
-
-class OrderMarketplaceListSerializer(BaseModelSerializer):
-    class Meta:
-        model = Order
-        fields = [
-            "pk",
-            "order_type",
-            "priority_status",
-            # "status",
-            "created",
-            # Marketplace fields
-            "user_name",
-            "order_number",
-            "marketplace",
-            "order_choice",
-            "estimated_shipping_date",
-            # CS2
-            # "reminder_one",
-            # "reminder_two",
-            # "is_expired",
-            # "is_paid_off",
-            "note",
-            "shipping_courier",
-        ]
