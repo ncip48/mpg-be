@@ -1,6 +1,7 @@
 # common/utils/pricing.py
 
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 
 def get_dynamic_item_price(
@@ -20,7 +21,15 @@ def get_dynamic_item_price(
     else:
         tier_qs = tier_qs.filter(variant_type__isnull=True)
 
-    tier = tier_qs.filter(min_qty__lte=qty, max_qty__gte=qty).first()
+    # tier = tier_qs.filter(min_qty__lte=qty, max_qty__gte=qty).first()
+    # 🔹 Fix: include null max_qty (means "no upper limit")
+    tier = (
+        tier_qs.filter(
+            min_qty__lte=qty,
+        )
+        .filter(Q(max_qty__gte=qty) | Q(max_qty__isnull=True))
+        .first()
+    )
 
     if not tier:
         raise ValidationError(
