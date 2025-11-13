@@ -7,8 +7,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
-from services.order.models.order import Order
 from services.deposit.models import Deposit
+from services.order.models.order import Order
 
 if TYPE_CHECKING:
     pass
@@ -47,7 +47,7 @@ class Invoice(get_subid_model()):
         default=False,
         help_text=_("Indicates if this invoice is for a down payment"),
     )
-    note = models.TextField(blank=True, null=True)
+    # note = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=20,
         choices=[
