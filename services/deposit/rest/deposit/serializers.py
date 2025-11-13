@@ -1,10 +1,14 @@
 from __future__ import annotations
+
 import datetime
-from rest_framework import serializers
-from typing import TYPE_CHECKING
 
 # from django.utils.translation import gettext_lazy as _
 import logging
+from typing import TYPE_CHECKING
+
+import holidays
+from rest_framework import serializers
+
 from core.common.serializers import BaseModelSerializer
 from services.deposit.models.deposit import Deposit
 from services.order.models import Order, OrderItem
@@ -18,8 +22,6 @@ from services.order.rest.order.serializers import (
     OrderKonveksiListSerializer,
 )
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
-import holidays
-
 
 if TYPE_CHECKING:
     pass
@@ -149,10 +151,10 @@ class DepositCreateSerializer(BaseModelSerializer):
     # --- End Helper methods ---
 
     def create(self, validated_data):
-        from django.utils import timezone
         from django.db import transaction
+        from django.utils import timezone
 
-        note = validated_data.pop("note", "")
+        # note = validated_data.pop("note", "")
         delivery_date = validated_data.pop("delivery_date", timezone.now().date())
         extra_costs_data = validated_data.pop("extra_costs", [])
 
@@ -182,7 +184,7 @@ class DepositCreateSerializer(BaseModelSerializer):
                 deposit=deposit,
                 issued_date=today,
                 delivery_date=delivery_date,
-                note=note,
+                # note=note,
             )
 
         return deposit
@@ -193,13 +195,12 @@ class DepositCreateSerializer(BaseModelSerializer):
         """
         from django.db import transaction
 
-        is_deposit = validated_data.pop(
-            "is_deposit", getattr(instance, "is_deposit", False)
-        )
-        note = validated_data.pop("note", "")
+        # note = validated_data.pop("note", "")
         delivery_date = validated_data.pop("delivery_date", None)
         items_data = validated_data.pop("items", None)
         extra_costs_data = validated_data.pop("extra_costs", None)
+
+        print(validated_data)
 
         with transaction.atomic():
             # Update main order fields
@@ -219,8 +220,8 @@ class DepositCreateSerializer(BaseModelSerializer):
             if invoice:
                 if delivery_date:
                     invoice.delivery_date = delivery_date
-                if note:
-                    invoice.note = note
+                # if note:
+                #     invoice.note = note
                 invoice.save()
 
         return instance
