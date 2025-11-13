@@ -98,13 +98,18 @@ class DepositCreateSerializer(BaseModelSerializer):
         model = Deposit
         fields = (
             "order",
-            "priority_status",
-            "items",
             "lead_time",
-            "note",
-            "extra_costs",
             "deposit_amount",
+            "priority_status",
+            "reminder_one",
+            "reminder_two",
+            "is_expired",
+            "is_paid_off",
+            "note",
+            "shipping_courier",
+            "extra_costs",
             "accepted_at",
+            "items",
         )
 
     # --- 4. New Helper methods for create/update ---
