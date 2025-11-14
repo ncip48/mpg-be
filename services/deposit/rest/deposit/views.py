@@ -1,38 +1,41 @@
 from __future__ import annotations
+
+import logging
+import os
 from decimal import Decimal
 from io import BytesIO
-import os
 from typing import TYPE_CHECKING
+
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
-import logging
-from rest_framework import status
-from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-from core.common.viewsets import BaseViewSet
-from services.deposit.rest.deposit.filtersets import DepositFilterSet
-from services.order.models.invoice import Invoice
-from services.deposit.rest.deposit.serializers import (
-    DepositCreateSerializer,
-    DepositListSerializer,
-    DepositDetailSerializer,
-)
-from services.deposit.models import Deposit
 
 # Report lab
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import mm
 from reportlab.platypus import (
-    SimpleDocTemplate,
+    Image,
     Paragraph,
+    SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
-    Image,
 )
-from django.http import HttpResponse
+from rest_framework import status
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+
+from core.common.viewsets import BaseViewSet
+from services.deposit.models import Deposit
+from services.deposit.rest.deposit.filtersets import DepositFilterSet
+from services.deposit.rest.deposit.serializers import (
+    DepositCreateSerializer,
+    DepositDetailSerializer,
+    DepositListSerializer,
+)
+from services.order.models.invoice import Invoice
 
 if TYPE_CHECKING:
     pass
@@ -119,7 +122,7 @@ class DepositViewSet(BaseViewSet):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     def generate_invoice_pdf(self, request, subid):
-        invoice = get_object_or_404(Invoice, deposit__subid=subid)
+        invoice = get_object_or_404(Invoice, subid=subid)
         order = invoice.order
 
         buffer = BytesIO()
