@@ -152,11 +152,17 @@ class DepositViewSet(BaseViewSet):
         elements.append(Spacer(1, 10))
 
         # --- CUSTOMER + INVOICE INFO ---
+        # info_data = [
+        #     ["<b>NAMA KONVEKSI</b>", f": {order.customer.name}"],
+        #     ["<b>Nomor Invoice</b>", f": {invoice.invoice_no}"],
+        #     ["<b>Tanggal Invoice</b>", f": {invoice.issued_date.strftime('%d %B %Y')}"],
+        #     ["<b>Tanggal Kirim</b>", f": {invoice.delivery_date.strftime('%d %B %Y')}"],
+        # ]
         info_data = [
-            ["<b>NAMA KONVEKSI</b>", f": {order.customer.name}"],
-            ["<b>Nomor Invoice</b>", f": {invoice.invoice_no}"],
-            ["<b>Tanggal Invoice</b>", f": {invoice.issued_date.strftime('%d %B %Y')}"],
-            ["<b>Tanggal Kirim</b>", f": {invoice.delivery_date.strftime('%d %B %Y')}"],
+            ["NAMA KONVEKSI", f": {order.customer.name}"],
+            ["Nomor Invoice", f": {invoice.invoice_no}"],
+            ["Tanggal Invoice", f": {invoice.issued_date.strftime('%d %B %Y')}"],
+            ["Tanggal Kirim", f": {invoice.delivery_date.strftime('%d %B %Y')}"],
         ]
         info_table = Table(info_data, colWidths=[100 * mm, 70 * mm])
         elements.append(info_table)
@@ -200,7 +206,7 @@ class DepositViewSet(BaseViewSet):
             item_data.append(["", "", "", "", "", ""])
 
         t = Table(
-            item_data, colWidths=[15 * mm, 60 * mm, 35 * mm, 30 * mm, 20 * mm, 30 * mm]
+            item_data, colWidths=[10 * mm, 60 * mm, 25 * mm, 30 * mm, 10 * mm, 30 * mm]
         )
         t.setStyle(
             TableStyle(
@@ -281,7 +287,7 @@ class DepositViewSet(BaseViewSet):
                 )
             ]
         ]
-        note_table = Table(note_data, colWidths=[180 * mm])
+        note_table = Table(note_data, colWidths=[165 * mm])
         note_table.setStyle(
             TableStyle(
                 [
