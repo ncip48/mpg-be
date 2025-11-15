@@ -4,8 +4,8 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-# from django.utils.translation import gettext_lazy as _
 
+# from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
 
 if TYPE_CHECKING:
@@ -37,6 +37,10 @@ class OrderForm(get_subid_model()):
         on_delete=models.CASCADE,
         related_name="order_forms",
     )
+    form_type = models.CharField(
+        max_length=20,
+        choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")],
+    )
     team_name = models.CharField(max_length=255, null=True, blank=True)
 
     design_front = models.CharField(max_length=255, null=True, blank=True)
@@ -52,11 +56,25 @@ class OrderForm(get_subid_model()):
     tag_size_bottom = models.CharField(max_length=255, null=True, blank=True)
     tag_size_shoulder = models.CharField(max_length=255, null=True, blank=True)
 
-    logo_chest_right = models.CharField(max_length=255, null=True, blank=True)
-    logo_center = models.CharField(max_length=255, null=True, blank=True)
-    logo_chest_left = models.CharField(max_length=255, null=True, blank=True)
-    logo_back = models.CharField(max_length=255, null=True, blank=True)
-    logo_pants = models.CharField(max_length=255, null=True, blank=True)
+    logo_chest_right = models.FileField(
+        upload_to="logos/", max_length=255, null=True, blank=True
+    )
+    logo_center = models.FileField(
+        upload_to="logos/", max_length=255, null=True, blank=True
+    )
+    logo_chest_left = models.FileField(
+        upload_to="logos/", max_length=255, null=True, blank=True
+    )
+    logo_back = models.FileField(
+        upload_to="logos/", max_length=255, null=True, blank=True
+    )
+    logo_pants = models.FileField(
+        upload_to="logos/", max_length=255, null=True, blank=True
+    )
+
+    created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     objects = OrderFormManager()
 

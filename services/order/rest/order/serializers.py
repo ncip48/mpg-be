@@ -1,9 +1,11 @@
 from __future__ import annotations
-from rest_framework import serializers
-from typing import TYPE_CHECKING
 
 # from django.utils.translation import gettext_lazy as _
 import logging
+from typing import TYPE_CHECKING
+
+from rest_framework import serializers
+
 from core.common.serializers import BaseModelSerializer
 from services.customer.models.customer import Customer
 from services.customer.rest.customer.serializers import CustomerSerializer
@@ -12,7 +14,7 @@ from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
-from services.product.models import ProductVariantType, Product, FabricType
+from services.product.models import FabricType, Product, ProductVariantType
 
 if TYPE_CHECKING:
     pass
@@ -260,8 +262,8 @@ class OrderCreateSerializer(BaseModelSerializer):
     # --- End Helper methods ---
 
     def create(self, validated_data):
-        from django.utils import timezone
         from django.db import transaction
+        from django.utils import timezone
 
         is_deposit = validated_data.pop("is_deposit", False)
         order_type = validated_data.get("order_type")
@@ -349,9 +351,7 @@ class OrderCreateSerializer(BaseModelSerializer):
         return instance
 
 
-class OrderItemListSerializer(
-    FloatToIntRepresentationMixin, serializers.ModelSerializer
-):
+class OrderItemListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     product_name = serializers.SerializerMethodField()
     fabric_type = serializers.CharField(source="fabric_type.name")
     unit = serializers.SerializerMethodField()
