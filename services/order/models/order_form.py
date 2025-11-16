@@ -43,8 +43,12 @@ class OrderForm(get_subid_model()):
     )
     team_name = models.CharField(max_length=255, null=True, blank=True)
 
-    design_front = models.CharField(max_length=255, null=True, blank=True)
-    design_back = models.CharField(max_length=255, null=True, blank=True)
+    design_front = models.FileField(
+        upload_to="designs/", max_length=255, null=True, blank=True
+    )
+    design_back = models.FileField(
+        upload_to="designs/", max_length=255, null=True, blank=True
+    )
 
     jersey_pattern = models.CharField(max_length=255, null=True, blank=True)
     jersey_type = models.CharField(max_length=255, null=True, blank=True)

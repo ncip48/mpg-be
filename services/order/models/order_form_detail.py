@@ -4,8 +4,8 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-# from django.utils.translation import gettext_lazy as _
 
+# from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ class OrderFormDetailManager(_OrderFormDetailManagerBase):
 
 
 class OrderFormDetail(get_subid_model()):
-    order_item = models.ForeignKey(
+    order_form = models.ForeignKey(
         "order.OrderForm",  # assuming your app name is 'order'
         on_delete=models.CASCADE,
         related_name="order_form_details",

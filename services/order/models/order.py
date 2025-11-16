@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import logging
+import random
 from typing import TYPE_CHECKING
 
 from django.db import models
-# from django.utils.translation import gettext_lazy as _
 
+# from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
 from services.customer.models.customer import Customer
 
@@ -32,7 +33,14 @@ class OrderManager(_OrderManagerBase):
     pass
 
 
+def generate_order_id():
+    return f"EZK-{random.randint(1000, 9999)}"
+
+
 class Order(get_subid_model()):
+    identifier = models.CharField(
+        max_length=20, null=True, blank=True, default=generate_order_id
+    )
     customer = models.ForeignKey(
         Customer,
         on_delete=models.SET_NULL,

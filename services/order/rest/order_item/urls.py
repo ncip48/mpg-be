@@ -23,4 +23,13 @@ urlpatterns = [
         ),
         name="order-form",
     ),
+    path(
+        "order-items/<str:subid>/order-form/pdf/",
+        OrderItemViewSet.as_view(
+            {
+                "get": "generate_pdf",
+            }
+        ),
+        name="order-item-detail-pdf",
+    ),
 ]
