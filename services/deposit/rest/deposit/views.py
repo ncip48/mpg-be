@@ -187,7 +187,7 @@ class DepositViewSet(BaseViewSet):
             Spacer(1, 5 * mm),
             Paragraph("<b>Invoice To</b>", styles["Bold"]),
             Paragraph(
-                f"Konveksi {order.convection_name}", styles["Normal"]
+                f"{order.convection_name}", styles["Normal"]
             ),  # Placeholder from image
             Paragraph(f"{order.customer.address}", styles["Normal"]),  # Placeholder
             Paragraph(f"{order.customer.phone}", styles["Normal"]),  # Placeholder
