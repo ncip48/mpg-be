@@ -205,12 +205,17 @@ class DepositCreateSerializer(BaseModelSerializer):
         items_data = validated_data.pop("items", None)
         extra_costs_data = validated_data.pop("extra_costs", None)
 
-        print(validated_data)
-
         with transaction.atomic():
             # Update main order fields
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
+
+            # 👉 Apply your requested logic:
+            if validated_data.get("is_paid_off") is True:
+                instance.is_expired = False
+                instance.reminder_one = None
+                instance.reminder_two = None
+
             instance.save()
 
             # --- Refactored: Use helper methods ---
