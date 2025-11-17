@@ -4,8 +4,8 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.db import models
-# from django.utils.translation import gettext_lazy as _
 
+# from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
 from services.order.models import Order
 
@@ -35,10 +35,8 @@ class DepositManager(_DepositManagerBase):
 class Deposit(get_subid_model()):
     order = models.ForeignKey(
         Order,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name="deposits",
-        null=True,
-        blank=True,
     )
     lead_time = models.PositiveIntegerField(default=0)
     deposit_amount = models.DecimalField(
