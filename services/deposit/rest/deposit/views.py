@@ -162,7 +162,7 @@ class DepositViewSet(BaseViewSet):
             )
         )
 
-        TARGET_BLUE = colors.HexColor("#01a4e8")
+        TARGET_BLUE = colors.HexColor("#EAD548")
 
         # --- 1. HEADER (Logo, Bill To, Invoice Info) ---
 
@@ -202,7 +202,7 @@ class DepositViewSet(BaseViewSet):
             TableStyle(
                 [
                     ("BACKGROUND", (0, 0), (-1, -1), TARGET_BLUE),
-                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
+                    ("TEXTCOLOR", (0, 0), (-1, -1), colors.black),
                     ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
                     ("FONTSIZE", (0, 0), (-1, -1), 35),
                     ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -422,19 +422,22 @@ class DepositViewSet(BaseViewSet):
             ),
             # Paragraph("Your Street No. 223 NY USA", styles["Small"]),
         ]
-        contact_phone = [
-            Paragraph("+00 123 456 789", styles["Small"]),
-            Paragraph("+00 123 456 789", styles["Small"]),
-        ]
+        # contact_phone = [
+        #     Paragraph("+00 123 456 789", styles["Small"]),
+        #     Paragraph("+00 123 456 789", styles["Small"]),
+        # ]
         contact_web = [
             Paragraph("IG: @ezsportswear", styles["Small"]),
             Paragraph("Tiktok: @ezsportswear2", styles["Small"]),
         ]
 
         contact_table = Table(
-            [[contact_logo, contact_addr, contact_phone, contact_web]],
-            colWidths=[20 * mm, 65 * mm, 45 * mm, 40 * mm],
+            # [[contact_logo, contact_addr, contact_phone, contact_web]],
+            [[contact_logo, contact_addr, contact_web]],
+            # colWidths=[20 * mm, 65 * mm, 45 * mm, 40 * mm],
+            colWidths=[20 * mm, 110 * mm, 40 * mm],
         )
+
         contact_table.setStyle(
             TableStyle(
                 [
