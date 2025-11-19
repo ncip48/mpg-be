@@ -16,6 +16,7 @@ from services.order.models.order_item import OrderItem
 from services.order.rest.order.serializers import (
     FloatToIntRepresentationMixin,
     OrderItemListSerializer,
+    OrderMarketplaceListSerializer,
 )
 from services.order.rest.order.utils import get_qty_value
 from services.printer.models.printer import Printer
@@ -303,11 +304,6 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         ]
         read_only_fields = ["pk"]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["printer"] = PrinterSerializer(instance.printer).data
-        return data
-
     def run_validation(self, data=serializers.empty):
         """
         Fix for nested writable serializers:
@@ -378,6 +374,9 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         data["details"] = OrderFormDetailSerializer(
             instance.order_form_details.all(), many=True
         ).data
+        data["printer"] = PrinterSerializer(instance.printer).data
+        data["order"] = OrderMarketplaceListSerializer(instance.order).data
+        return data
         return data
 
     def create(self, validated_data):
