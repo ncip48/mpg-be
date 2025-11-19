@@ -190,8 +190,6 @@ class OrderViewSet(BaseViewSet):
         data = request.data.copy()
         data["order"] = order.subid
 
-        print(data)
-
         serializer = OrderFormMarketplaceSerializer(
             data=data, context={"request": request}
         )
@@ -202,8 +200,8 @@ class OrderViewSet(BaseViewSet):
 
     def update_order_form(self, request, *args, **kwargs):
         """Full update (PUT) for the order form attached to this OrderItem."""
-        order_item = self.get_object()
-        order_form = order_item.order_forms.first()
+        order = self.get_object()
+        order_form = order.order_forms.first()
 
         if not order_form:
             return Response(
@@ -211,9 +209,9 @@ class OrderViewSet(BaseViewSet):
             )
 
         data = request.data.copy()
-        data["order_item"] = order_item.subid  # prevent changing FK
+        data["order"] = order.subid  # prevent changing FK
 
-        serializer = OrderFormSerializer(
+        serializer = OrderFormMarketplaceSerializer(
             order_form,
             data=data,
             context={"request": request},
@@ -225,8 +223,8 @@ class OrderViewSet(BaseViewSet):
 
     def partial_update_order_form(self, request, *args, **kwargs):
         """Partial update (PATCH) for the order form."""
-        order_item = self.get_object()
-        order_form = order_item.order_forms.first()
+        order = self.get_object()
+        order_form = order.order_forms.first()
 
         if not order_form:
             return Response(
@@ -234,9 +232,9 @@ class OrderViewSet(BaseViewSet):
             )
 
         data = request.data.copy()
-        data["order_item"] = order_item.subid  # ensure FK cannot be modified
+        data["order"] = order.subid  # ensure FK cannot be modified
 
-        serializer = OrderFormSerializer(
+        serializer = OrderFormMarketplaceSerializer(
             order_form,
             data=data,
             partial=True,
@@ -249,8 +247,8 @@ class OrderViewSet(BaseViewSet):
 
     def delete_order_form(self, request, *args, **kwargs):
         """Delete the order form for this OrderItem."""
-        order_item = self.get_object()
-        order_form = order_item.order_forms.first()
+        order = self.get_object()
+        order_form = order.order_forms.first()
 
         if not order_form:
             return Response(
