@@ -78,7 +78,6 @@ class OrderItemViewSet(BaseViewSet):
 
     def order_form(self, request, *args, **kwargs):
         order_item = self.get_object()  # get OrderItem by subid from URL
-        print("omke")
 
         order_form = order_item.order_forms.first()
 

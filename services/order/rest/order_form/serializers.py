@@ -18,6 +18,7 @@ from services.order.rest.order.serializers import (
     OrderItemListSerializer,
 )
 from services.order.rest.order.utils import get_qty_value
+from services.printer.models.printer import Printer
 from services.printer.rest.printer.serializers import PrinterSerializer
 
 if TYPE_CHECKING:
@@ -271,3 +272,35 @@ class OrderFormSerializer(BaseModelSerializer):
             total_qty += get_qty_value(item.variant_type.weight, qty)
 
         return total_qty
+
+
+class OrderFormMarketplaceSerializer(BaseModelSerializer):
+    """
+    Serializer for order form marketplace
+    """
+
+    order = serializers.SlugRelatedField(
+        slug_field="subid", queryset=Order.objects.all(), write_only=True
+    )
+
+    printer = serializers.SlugRelatedField(
+        slug_field="subid", queryset=Printer.objects.all(), write_only=True
+    )
+
+    class Meta:
+        model = OrderForm
+        fields = [
+            "pk",
+            "form_type",
+            "order",
+            "printer",
+            "marketplace",
+            "email_send_date",
+            "session",
+        ]
+        read_only_fields = ["pk"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["printer"] = PrinterSerializer(instance.printer).data
+        return data

@@ -391,6 +391,29 @@ class OrderItemListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer
         return variant_type.unit.upper() if variant_type and variant_type.unit else None
 
 
+class _OrderItemSerializer(OrderItemListSerializer):
+    """
+    Serializer for order form
+    """
+
+    has_order_form = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = (
+            [
+                "pk",
+            ]
+            + OrderItemListSerializer.Meta.fields
+            + [
+                "has_order_form",
+            ]
+        )
+
+    def get_has_order_form(self, obj: OrderItem) -> bool:
+        return obj.order_forms.exists()
+
+
 class InvoiceSummarySerializer(BaseModelSerializer):
     total_invoice = serializers.SerializerMethodField()
     total_extra_cost = serializers.SerializerMethodField()
@@ -517,6 +540,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
     # detail_order = serializers.SerializerMethodField()
     # qty = serializers.SerializerMethodField()
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+    items = _OrderItemSerializer(many=True, read_only=True)
     is_deposit = serializers.SerializerMethodField()
 
     # Define fields for the FloatToInt mixin
@@ -530,6 +554,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
             "is_deposit",
             "convection_name",
             "customer",
+            "items",
             # "priority_status",
             "status",
             "created",

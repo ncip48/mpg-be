@@ -8,11 +8,11 @@ from django.utils.translation import gettext_lazy as _
 
 from core.common.models import get_subid_model
 from services.customer.models.customer import Customer
+from services.deposit.models import Deposit
 from services.order.models.order import Order
 from services.product.models.fabric_type import FabricType
 from services.product.models.product import Product
 from services.product.models.variant_type import ProductVariantType
-from services.deposit.models import Deposit
 
 if TYPE_CHECKING:
     pass

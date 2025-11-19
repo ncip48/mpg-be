@@ -7,6 +7,7 @@ from django.db import models
 
 # from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
+from services.printer.models.printer import Printer
 
 if TYPE_CHECKING:
     pass
@@ -32,10 +33,13 @@ class OrderFormManager(_OrderFormManagerBase):
 
 
 class OrderForm(get_subid_model()):
+    # Konveksi
     order_item = models.ForeignKey(
-        "order.OrderItem",  # assuming your app name is 'order'
+        "order.OrderItem",
         on_delete=models.CASCADE,
         related_name="order_forms",
+        null=True,
+        blank=True,
     )
     form_type = models.CharField(
         max_length=20,
@@ -75,6 +79,29 @@ class OrderForm(get_subid_model()):
     logo_pants = models.FileField(
         upload_to="logos/", max_length=255, null=True, blank=True
     )
+
+    # Marketplace
+    order = models.ForeignKey(
+        "order.Order",
+        on_delete=models.CASCADE,
+        related_name="order_forms",
+        null=True,
+        blank=True,
+    )
+    printer = models.ForeignKey(
+        Printer,
+        on_delete=models.CASCADE,
+        related_name="order_forms",
+        null=True,
+        blank=True,
+    )
+    marketplace = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
+    email_send_date = models.DateField(blank=True, null=True)
+    session = models.CharField(max_length=255, null=True, blank=True)
 
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
