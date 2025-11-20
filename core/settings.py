@@ -11,11 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
-from pathlib import Path
-from decouple import config
 from datetime import timedelta
+from pathlib import Path
 
 import pymysql
+from decouple import config
 
 pymysql.install_as_MySQLdb()
 
@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "services.customer",
     "services.order",
     "services.deposit",
+    "services.forecast",
 ]
 
 MIDDLEWARE = [

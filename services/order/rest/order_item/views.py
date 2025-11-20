@@ -29,6 +29,7 @@ from core.common.viewsets import BaseViewSet
 from core.media import media_to_path
 from services.order.models.order_item import OrderItem
 from services.order.rest.order_form.serializers import OrderFormSerializer
+from services.order.rest.order_item.filtersets import OrderItemFilterSet
 from services.order.rest.order_item.serializers import OrderItemSerializer
 
 if TYPE_CHECKING:
@@ -45,6 +46,7 @@ class OrderItemViewSet(BaseViewSet):
     lookup_field = "subid"
     ordering_fields = ["pk"]
     ordering = ["-pk"]
+    filterset_class = OrderItemFilterSet
 
     search_fields = ["product__name", "deposit__order__customer__name"]
 
