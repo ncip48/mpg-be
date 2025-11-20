@@ -8,6 +8,7 @@ from django.db import models
 # from django.utils.translation import gettext_lazy as _
 from core.common.models import get_subid_model
 from services.printer.models.printer import Printer
+from services.product.models.fabric_type import FabricType
 
 if TYPE_CHECKING:
     pass
@@ -90,6 +91,13 @@ class OrderForm(get_subid_model()):
     )
     printer = models.ForeignKey(
         Printer,
+        on_delete=models.CASCADE,
+        related_name="order_forms",
+        null=True,
+        blank=True,
+    )
+    fabric_type = models.ForeignKey(
+        FabricType,
         on_delete=models.CASCADE,
         related_name="order_forms",
         null=True,
