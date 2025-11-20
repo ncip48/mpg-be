@@ -21,6 +21,8 @@ from services.order.rest.order.serializers import (
 from services.order.rest.order.utils import get_qty_value
 from services.printer.models.printer import Printer
 from services.printer.rest.printer.serializers import PrinterSerializer
+from services.product.models.fabric_type import FabricType
+from services.product.rest.fabric_type.serializers import FabricTypeSerializerSimple
 
 if TYPE_CHECKING:
     pass
@@ -288,6 +290,10 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         slug_field="subid", queryset=Printer.objects.all(), write_only=True
     )
 
+    fabric_type = serializers.SlugRelatedField(
+        slug_field="subid", queryset=FabricType.objects.all(), write_only=True
+    )
+
     details = OrderFormDetailSerializer(many=True, required=False, allow_null=True)
 
     class Meta:
@@ -297,6 +303,7 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
             "form_type",
             "order",
             "printer",
+            "fabric_type",
             "marketplace",
             "email_send_date",
             "session",
@@ -376,6 +383,7 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         ).data
         data["printer"] = PrinterSerializer(instance.printer).data
         data["order"] = OrderMarketplaceListSerializer(instance.order).data
+        data["fabric_type"] = FabricTypeSerializerSimple(instance.fabric_type).data
         return data
         return data
 
