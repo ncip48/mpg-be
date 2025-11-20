@@ -550,6 +550,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
         model = Order
         fields = [
             "pk",
+            "identifier",
             "order_type",
             "is_deposit",
             "convection_name",
