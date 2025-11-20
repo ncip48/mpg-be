@@ -38,7 +38,7 @@ class Forecast(get_subid_model()):
     order_item = models.ForeignKey(
         "order.OrderItem",
         on_delete=models.CASCADE,
-        related_name="order_forms",
+        related_name="fo",
         null=True,
         blank=True,
     )
@@ -47,7 +47,7 @@ class Forecast(get_subid_model()):
     order = models.ForeignKey(
         "order.Order",
         on_delete=models.CASCADE,
-        related_name="order_forms",
+        related_name="forecasts",
         null=True,
         blank=True,
     )
@@ -64,6 +64,7 @@ class Forecast(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
+            ("add_forecast", "Can add forecast"),
             ("view_forecast", "Can view forecast"),
             ("change_forecast", "Can change forecast"),
             ("delete_forecast", "Can delete forecast"),

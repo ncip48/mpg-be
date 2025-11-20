@@ -15,12 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path, include, re_path
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-from rest_framework import permissions
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path, re_path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
 from core import settings
 
@@ -49,6 +49,7 @@ urlpatterns = [
     path("api/", include("services.customer.rest.urls")),
     path("api/", include("services.order.rest.urls")),
     path("api/", include("services.deposit.rest.urls")),
+    path("api/", include("services.forecast.rest.urls")),
     # Swagger UI routes
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
