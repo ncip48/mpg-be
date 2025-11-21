@@ -48,7 +48,9 @@ class PrintVerificationViewSet(BaseViewSet):
     ]
 
     def create(self, request, *args, **kwargs):
-        serializer = BasePrintVerificationSerializer(data=request.data)
+        serializer = BasePrintVerificationSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
 
         forecast = serializer.validated_data["forecast"]
@@ -59,18 +61,23 @@ class PrintVerificationViewSet(BaseViewSet):
         if instance:
             # Update existing record
             update_serializer = BasePrintVerificationSerializer(
-                instance, data=request.data, partial=True
+                instance, data=request.data, partial=True, context={"request": request}
             )
             update_serializer.is_valid(raise_exception=True)
-            updated = update_serializer.save()
+            updated = update_serializer.save(verified_by=request.user)
             return Response(
-                BasePrintVerificationSerializer(updated).data, status=status.HTTP_200_OK
+                BasePrintVerificationSerializer(
+                    updated, context={"request": request}
+                ).data,
+                status=status.HTTP_200_OK,
             )
 
         # Create new
-        print_verification = serializer.save()
+        print_verification = serializer.save(verified_by=request.user)
 
         return Response(
-            BasePrintVerificationSerializer(print_verification).data,
+            BasePrintVerificationSerializer(
+                print_verification, context={"request": request}
+            ).data,
             status=status.HTTP_201_CREATED,
         )

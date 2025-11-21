@@ -27,7 +27,6 @@ class BasePrintVerificationSerializer(BaseModelSerializer):
         allow_null=False,
         write_only=True,
     )
-    verified_by = UserSerializerSimple(read_only=True)
 
     class Meta:
         model = PrintVerification
@@ -44,9 +43,17 @@ class BasePrintVerificationSerializer(BaseModelSerializer):
             "updated",
         )
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["verified_by"] = UserSerializerSimple(instance.verified_by).data
+        return data
+
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
-        return PrintVerification.objects.create(forecast=forecast, **validated_data)
+        user = self.context["request"].user
+        return PrintVerification.objects.create(
+            forecast=forecast, verified_by=user, **validated_data
+        )
 
 
 class PrintVerificationSerializer(ForecastSerializer):

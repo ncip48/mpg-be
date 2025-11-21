@@ -48,7 +48,9 @@ class QCLineVerificationViewSet(BaseViewSet):
     ]
 
     def create(self, request, *args, **kwargs):
-        serializer = BaseQCLineVerificationSerializer(data=request.data)
+        serializer = BaseQCLineVerificationSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
 
         forecast = serializer.validated_data["forecast"]
@@ -59,19 +61,21 @@ class QCLineVerificationViewSet(BaseViewSet):
         if instance:
             # Update existing record
             update_serializer = BaseQCLineVerificationSerializer(
-                instance, data=request.data, partial=True
+                instance, data=request.data, partial=True, context={"request": request}
             )
             update_serializer.is_valid(raise_exception=True)
-            updated = update_serializer.save()
+            updated = update_serializer.save(checked_by=request.user)
             return Response(
-                BaseQCLineVerificationSerializer(updated).data,
+                BaseQCLineVerificationSerializer(
+                    updated, context={"request": request}
+                ).data,
                 status=status.HTTP_200_OK,
             )
 
         # Create new
-        print_verification = serializer.save()
+        qc = serializer.save(checked_by=request.user)
 
         return Response(
-            BaseQCLineVerificationSerializer(print_verification).data,
+            BaseQCLineVerificationSerializer(qc, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )

@@ -27,7 +27,6 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
         allow_null=False,
         write_only=True,
     )
-    checked_by = UserSerializerSimple(read_only=True)
 
     class Meta:
         model = QCLineVerification
@@ -61,11 +60,19 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
         else:
             data["defect_image"] = None
 
+        data["checked_by"] = UserSerializerSimple(instance.checked_by).data
+
         return data
 
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
-        return QCLineVerification.objects.create(forecast=forecast, **validated_data)
+        user = self.context["request"].user
+
+        return QCLineVerification.objects.create(
+            forecast=forecast,
+            checked_by=user,
+            **validated_data,
+        )
 
 
 class QCLineVerificationSerializer(ForecastSerializer):
