@@ -41,10 +41,10 @@ class PrintVerificationViewSet(BaseViewSet):
     ]
 
     required_perms = [
-        "print_verification.add_print_verification",
-        "print_verification.change_print_verification",
-        "print_verification.delete_print_verification",
-        "print_verification.view_print_verification",
+        "verification.add_print_verification",
+        "verification.change_print_verification",
+        "verification.delete_print_verification",
+        "verification.view_print_verification",
     ]
 
     def create(self, request, *args, **kwargs):

@@ -9,17 +9,17 @@ from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
-from services.verification.models.qc_line_verification import QCLineVerification
+from services.verification.models import QCCuttingVerification
 
 if TYPE_CHECKING:
     pass
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("QCLineVerificationSerializer", "BaseQCLineVerificationSerializer")
+__all__ = ("QCCuttingVerificationSerializer", "BaseQCCuttingVerificationSerializer")
 
 
-class BaseQCLineVerificationSerializer(BaseModelSerializer):
+class BaseQCCuttingVerificationSerializer(BaseModelSerializer):
     forecast = serializers.SlugRelatedField(
         slug_field="subid",
         queryset=Forecast.objects.all(),
@@ -29,7 +29,7 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
     )
 
     class Meta:
-        model = QCLineVerification
+        model = QCCuttingVerification
         fields = (
             "subid",
             "forecast",
@@ -67,27 +67,27 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
 
-        return QCLineVerification.objects.create(
+        return QCCuttingVerification.objects.create(
             forecast=forecast,
             **validated_data,
         )
 
 
-class QCLineVerificationSerializer(ForecastSerializer):
-    qc_line_verification = serializers.SerializerMethodField()
+class QCCuttingVerificationSerializer(ForecastSerializer):
+    qc_cutting_verification = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
         fields = ForecastSerializer.Meta.fields + [
-            "qc_line_verification",
+            "qc_cutting_verification",
         ]
 
-    def get_qc_line_verification(self, obj):
+    def get_qc_cutting_verification(self, obj):
         request = self.context.get("request")
         try:
-            qc_line_verification = QCLineVerification.objects.get(forecast=obj)
-            return BaseQCLineVerificationSerializer(
-                qc_line_verification, context={"request": request}
+            qc_cutting_verification = QCCuttingVerification.objects.get(forecast=obj)
+            return BaseQCCuttingVerificationSerializer(
+                qc_cutting_verification, context={"request": request}
             ).data
-        except QCLineVerification.DoesNotExist:
+        except QCCuttingVerification.DoesNotExist:
             return None

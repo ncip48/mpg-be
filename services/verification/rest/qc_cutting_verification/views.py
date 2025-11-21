@@ -9,10 +9,10 @@ from rest_framework.response import Response
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
-from services.verification.models.qc_line_verification import QCLineVerification
-from services.verification.rest.qc_line_verification.serializers import (
-    BaseQCLineVerificationSerializer,
-    QCLineVerificationSerializer,
+from services.verification.models import QCCuttingVerification
+from services.verification.rest.qc_cutting_verification.serializers import (
+    BaseQCCuttingVerificationSerializer,
+    QCCuttingVerificationSerializer,
 )
 
 if TYPE_CHECKING:
@@ -20,18 +20,18 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("QCLineVerificationViewSet",)
+__all__ = ("QCCuttingVerificationViewSet",)
 
 
-class QCLineVerificationViewSet(BaseViewSet):
+class QCCuttingVerificationViewSet(BaseViewSet):
     """
     A viewset for viewing and editing Print Verification entries.
     Accessible only by superusers.
     """
 
-    my_tags = ["QC Line Verification"]
+    my_tags = ["QC Cutting Verification"]
     queryset = Forecast.objects.all()
-    serializer_class = QCLineVerificationSerializer
+    serializer_class = QCCuttingVerificationSerializer
     lookup_field = "subid"
 
     search_fields = [
@@ -41,14 +41,14 @@ class QCLineVerificationViewSet(BaseViewSet):
     ]
 
     required_perms = [
-        "verification.add_print_verification",
-        "verification.change_print_verification",
-        "verification.delete_print_verification",
-        "verification.view_print_verification",
+        "print_verification.add_print_verification",
+        "print_verification.change_print_verification",
+        "print_verification.delete_print_verification",
+        "print_verification.view_print_verification",
     ]
 
     def create(self, request, *args, **kwargs):
-        serializer = BaseQCLineVerificationSerializer(
+        serializer = BaseQCCuttingVerificationSerializer(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
@@ -56,17 +56,17 @@ class QCLineVerificationViewSet(BaseViewSet):
         forecast = serializer.validated_data["forecast"]
 
         # Check if record exists
-        instance = QCLineVerification.objects.filter(forecast=forecast).first()
+        instance = QCCuttingVerification.objects.filter(forecast=forecast).first()
 
         if instance:
             # Update existing record
-            update_serializer = BaseQCLineVerificationSerializer(
+            update_serializer = BaseQCCuttingVerificationSerializer(
                 instance, data=request.data, partial=True, context={"request": request}
             )
             update_serializer.is_valid(raise_exception=True)
             updated = update_serializer.save(checked_by=request.user)
             return Response(
-                BaseQCLineVerificationSerializer(
+                BaseQCCuttingVerificationSerializer(
                     updated, context={"request": request}
                 ).data,
                 status=status.HTTP_200_OK,
@@ -76,6 +76,6 @@ class QCLineVerificationViewSet(BaseViewSet):
         qc = serializer.save(checked_by=request.user)
 
         return Response(
-            BaseQCLineVerificationSerializer(qc, context={"request": request}).data,
+            BaseQCCuttingVerificationSerializer(qc, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )

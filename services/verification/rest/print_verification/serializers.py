@@ -50,10 +50,7 @@ class BasePrintVerificationSerializer(BaseModelSerializer):
 
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
-        user = self.context["request"].user
-        return PrintVerification.objects.create(
-            forecast=forecast, verified_by=user, **validated_data
-        )
+        return PrintVerification.objects.create(forecast=forecast, **validated_data)
 
 
 class PrintVerificationSerializer(ForecastSerializer):
