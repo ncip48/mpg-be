@@ -34,6 +34,10 @@ class ForecastViewSet(BaseViewSet):
         "created_by__email",
     ]
 
+    filterset_fields = [
+        "date_forecast",
+    ]
+
     required_perms = [
         "forecast.add_forecast",
         "forecast.change_forecast",
