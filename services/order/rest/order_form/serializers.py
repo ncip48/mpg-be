@@ -108,6 +108,8 @@ class OrderFormSerializer(BaseModelSerializer):
             "team_name",
             "design_front",
             "design_back",
+            "preview_print_front",
+            "preview_print_back",
             "jersey_pattern",
             "jersey_type",
             "jersey_cutting",
@@ -132,6 +134,8 @@ class OrderFormSerializer(BaseModelSerializer):
         file_fields = [
             "design_front",
             "design_back",
+            "preview_print_front",
+            "preview_print_back",
             "logo_chest_right",
             "logo_center",
             "logo_chest_left",

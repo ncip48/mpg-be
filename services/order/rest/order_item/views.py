@@ -545,12 +545,12 @@ class OrderItemViewSet(BaseViewSet):
         # More placeholder cells
         pc_front_cell = [
             Spacer(1, 3 * cm),
-            Paragraph(f"<i>(Preview Image 1)</i>", styles["Placeholder"]),
+            create_design_image("preview_print_front"),
             Spacer(1, 3 * cm),
         ]
         pc_back_cell = [
             Spacer(1, 3 * cm),
-            Paragraph(f"<i>(Preview Image 2)</i>", styles["Placeholder"]),
+            create_design_image("preview_print_back"),
             Spacer(1, 3 * cm),
         ]
         pc_table = Table([[pc_front_cell, pc_back_cell]], colWidths=[5.5 * cm, 4 * cm])
