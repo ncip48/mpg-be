@@ -143,7 +143,7 @@ class OrderFormSerializer(BaseModelSerializer):
             value = attrs.get(field)
             if value:
                 # Example: Limit file types
-                allowed_types = ["image/jpeg", "image/png"]
+                allowed_types = ["image/jpeg", "image/png", "image/jpg"]
                 if value.content_type not in allowed_types:
                     errors[field] = (
                         f"Invalid file type '{value.content_type}'. "
@@ -164,27 +164,12 @@ class OrderFormSerializer(BaseModelSerializer):
 
     def run_validation(self, data=serializers.empty):
         """
-        Fix for nested writable serializers and Pickle Errors.
+        Fix for nested writable serializers:
+        Force nested lists to accept partial updates during PATCH.
         """
-        from django.core.files.uploadedfile import UploadedFile
-
         if self.partial and "details" in self.fields:
             field = self.fields["details"]
             field.partial = True
-
-        # 1. Create a mutable copy
-        data = data.copy()
-
-        # 2. Dynamic Cleanup:
-        # Iterate over all keys. If a value is a file object (InMemory or Temporary),
-        # replace it with its name. This prevents "cannot pickle" errors
-        # if a ValidationError occurs later and Django tries to snapshot this variable.
-        for key, value in list(data.items()):
-            if isinstance(value, UploadedFile):
-                # Replace the file object with just the filename string
-                data[key] = value.name
-
-        # 3. Pass the "clean" data (safe for pickling) to DRF validation
         return super().run_validation(data)
 
     def _parse_json_field(self, data, field_name):
