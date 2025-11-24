@@ -5,7 +5,7 @@ import logging
 import os
 from typing import TYPE_CHECKING
 
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
@@ -977,13 +977,12 @@ class OrderItemViewSet(BaseViewSet):
 
         # ---------- Build PDF ----------
         doc.build(story)
-        buffer.seek(0)
+        # buffer.seek(0)
+        pdf = buffer.getvalue()
+        buffer.close()
 
         filename = f"order_form_{order_item.subid}.pdf"
 
-        return FileResponse(
-            buffer,
-            as_attachment=True,
-            filename=filename,
-            content_type="application/pdf",
-        )
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = 'inline; filename="order.pdf"'
+        return response
