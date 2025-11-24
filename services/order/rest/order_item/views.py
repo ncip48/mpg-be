@@ -984,5 +984,5 @@ class OrderItemViewSet(BaseViewSet):
         filename = f"order_form_{order_item.subid}.pdf"
 
         response = HttpResponse(pdf, content_type="application/pdf")
-        response["Content-Disposition"] = 'inline; filename="order.pdf"'
+        response["Content-Disposition"] = f'inline; filename="{filename}"'
         return response
