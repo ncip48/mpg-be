@@ -730,8 +730,8 @@ class OrderItemViewSet(BaseViewSet):
             # Remove padding for styled paragraphs
             table_style_commands.append(("LEFTPADDING", (0, 0), (-1, 0), 0))
             table_style_commands.append(("RIGHTPADDING", (0, 0), (-1, 0), 0))
-            table_style_commands.append(("TOPPADDING", (0, 0), (-1, 0), 0))
-            table_style_commands.append(("BOTTOMPADDING", (0, 0), (-1, 0), 0))
+            table_style_commands.append(("TOPPADDING", (0, 0), (-1, 0), 3))
+            table_style_commands.append(("BOTTOMPADDING", (0, 0), (-1, 0), 3))
 
             # --- 4. Add Data Rows (Grouped) ---
             item_counter = 1
