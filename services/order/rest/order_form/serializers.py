@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from rest_framework import serializers
 
+from core import settings
 from core.common.serializers import BaseModelSerializer
 from services.customer.rest.customer.serializers import CustomerSerializerSimple
 from services.deposit.models.deposit import Deposit
@@ -125,14 +126,65 @@ class OrderFormSerializer(BaseModelSerializer):
         ]
         read_only_fields = ["pk"]
 
+    def validate(self, attrs):
+        errors = {}
+
+        file_fields = [
+            "design_front",
+            "design_back",
+            "logo_chest_right",
+            "logo_center",
+            "logo_chest_left",
+            "logo_back",
+            "logo_pants",
+        ]
+
+        for field in file_fields:
+            value = attrs.get(field)
+            if value:
+                # Example: Limit file types
+                allowed_types = ["image/jpeg", "image/png"]
+                if value.content_type not in allowed_types:
+                    errors[field] = (
+                        f"Invalid file type '{value.content_type}'. "
+                        "Only JPEG and PNG images are allowed."
+                    )
+
+                # Example: File size validation (max 10MB)
+                if value.size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                    errors[field] = (
+                        f"File size too large ({value.size / 1024 / 1024:.1f} MB). "
+                        f"Maximum allowed is {settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024:.1f} MB."
+                    )
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return attrs
+
     def run_validation(self, data=serializers.empty):
         """
-        Fix for nested writable serializers:
-        Force nested lists to accept partial updates during PATCH.
+        Fix for nested writable serializers and Pickle Errors.
         """
+        from django.core.files.uploadedfile import UploadedFile
+
         if self.partial and "details" in self.fields:
             field = self.fields["details"]
             field.partial = True
+
+        # 1. Create a mutable copy
+        data = data.copy()
+
+        # 2. Dynamic Cleanup:
+        # Iterate over all keys. If a value is a file object (InMemory or Temporary),
+        # replace it with its name. This prevents "cannot pickle" errors
+        # if a ValidationError occurs later and Django tries to snapshot this variable.
+        for key, value in list(data.items()):
+            if isinstance(value, UploadedFile):
+                # Replace the file object with just the filename string
+                data[key] = value.name
+
+        # 3. Pass the "clean" data (safe for pickling) to DRF validation
         return super().run_validation(data)
 
     def _parse_json_field(self, data, field_name):
