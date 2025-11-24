@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "services.deposit",
     "services.forecast",
     "services.verification",
+    "services.sewer",
 ]
 
 MIDDLEWARE = [
