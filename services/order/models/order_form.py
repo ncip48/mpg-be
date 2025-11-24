@@ -54,6 +54,12 @@ class OrderForm(get_subid_model()):
     design_back = models.FileField(
         upload_to="designs/", max_length=255, null=True, blank=True
     )
+    preview_print_front = models.FileField(
+        upload_to="preview_prints/", max_length=255, null=True, blank=True
+    )
+    preview_print_back = models.FileField(
+        upload_to="preview_prints/", max_length=255, null=True, blank=True
+    )
 
     jersey_pattern = models.CharField(max_length=255, null=True, blank=True)
     jersey_type = models.CharField(max_length=255, null=True, blank=True)
