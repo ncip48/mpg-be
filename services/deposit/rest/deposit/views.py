@@ -91,9 +91,7 @@ class DepositViewSet(BaseViewSet):
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
 
-        # Use the same detail serializer for response
-        response_serializer = DepositDetailSerializer(order)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         """

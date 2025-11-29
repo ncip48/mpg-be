@@ -92,7 +92,8 @@ class DepositCreateSerializer(BaseModelSerializer):
     )
     items = OrderItemInputSerializer(many=True)
     note = serializers.CharField(required=False, allow_blank=True)
-    extra_costs = OrderExtraCostSerializer(many=True, required=False)
+    extra_costs = OrderExtraCostSerializer(many=True, write_only=True, required=False)
+    discounts = OrderExtraCostSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = Deposit
@@ -108,6 +109,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             "note",
             "shipping_courier",
             "extra_costs",
+            "discounts",
             "accepted_at",
             "items",
         )
@@ -141,19 +143,41 @@ class DepositCreateSerializer(BaseModelSerializer):
         for extra_data in extra_costs_data:
             OrderExtraCost.objects.create(order=order, deposit=deposit, **extra_data)
 
+    def _create_discounts(self, order, deposit, discounts_data):
+        """Helper to create extra costs."""
+        for discount in discounts_data:
+            # change into negative if positive, if already negative do nothing
+            if discount["amount"] > 0:
+                discount["amount"] = -discount["amount"]
+            OrderExtraCost.objects.create(order=order, deposit=deposit, **discount)
+
     def _update_order_items(self, instance, items_data):
         """Helper to update order items (delete and recreate)."""
         if items_data is not None:
             instance.items.all().delete()
             self._create_order_items(instance, items_data)
 
-    def _update_extra_costs(self, instance, extra_costs_data):
+    def _update_extra_costs(self, instance, extra_costs_data, discounts_data):
         """Helper to update extra costs (delete and recreate)."""
         if extra_costs_data is not None:
-            instance.extra_costs.all().delete()
+            instance.extra_costs.exclude(type="discount").delete()
             self._create_extra_costs(instance, extra_costs_data)
 
+        if discounts_data is not None:
+            instance.extra_costs.filter(type="discount").delete()
+            self._create_discounts(instance, discounts_data)
+
     # --- End Helper methods ---
+    #
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        extra_costs = instance.extra_costs.exclude(type="discount")
+        discounts = instance.extra_costs.filter(type="discount")
+        extra_costs_serializer = OrderExtraCostSerializer(extra_costs, many=True)
+        discounts_serializer = OrderExtraCostSerializer(discounts, many=True)
+        data["extra_costs"] = extra_costs_serializer.data
+        data["discounts"] = discounts_serializer.data
+        return data
 
     def create(self, validated_data):
         from django.db import transaction
@@ -162,6 +186,7 @@ class DepositCreateSerializer(BaseModelSerializer):
         # note = validated_data.pop("note", "")
         delivery_date = validated_data.pop("delivery_date", timezone.now().date())
         extra_costs_data = validated_data.pop("extra_costs", [])
+        discounts_data = validated_data.pop("discounts", [])
 
         with transaction.atomic():
             # Normal konveksi order
@@ -177,6 +202,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             # --- Refactored: Use helper methods ---
             self._create_order_items(order, deposit, items_data)
             self._create_extra_costs(order, deposit, extra_costs_data)
+            self._create_discounts(order, deposit, discounts_data)
             # --- End Refactored ---
 
             # Generate invoice
@@ -204,6 +230,7 @@ class DepositCreateSerializer(BaseModelSerializer):
         delivery_date = validated_data.pop("delivery_date", None)
         items_data = validated_data.pop("items", None)
         extra_costs_data = validated_data.pop("extra_costs", None)
+        discounts_data = validated_data.pop("discounts", None)
 
         with transaction.atomic():
             # Update main order fields
@@ -222,7 +249,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             # Update order items if provided
             self._update_order_items(instance, items_data)
             # Update extra costs if provided
-            self._update_extra_costs(instance, extra_costs_data)
+            self._update_extra_costs(instance, extra_costs_data, discounts_data)
             # --- End Refactored ---
 
             # Update invoice if exists
@@ -283,7 +310,8 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     order = OrderKonveksiListSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
-    extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+    extra_costs = serializers.SerializerMethodField()
+    discounts = serializers.SerializerMethodField()
     detail_order = serializers.SerializerMethodField()
     qty = serializers.SerializerMethodField()
     estimate_sent = serializers.SerializerMethodField()
@@ -301,6 +329,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "items",
             "invoice",
             "extra_costs",
+            "discounts",
             "detail_order",
             "qty",
             # CS2
@@ -315,6 +344,14 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "accepted_at",
             "estimate_sent",
         ]
+
+    def get_extra_costs(self, obj):
+        qs = obj.extra_costs.exclude(type="discount")
+        return OrderExtraCostSerializer(qs, many=True).data
+
+    def get_discounts(self, obj):
+        qs = obj.extra_costs.filter(type="discount")
+        return OrderExtraCostSerializer(qs, many=True).data
 
     def get_estimate_sent(self, obj):
         accepted_at = getattr(obj, "accepted_at", None)
@@ -411,7 +448,8 @@ class DepositDetailSerializer(
     # customer = CustomerSerializer(read_only=True)
     invoice = InvoiceSummarySerializer(read_only=True)
     items = OrderItemListSerializer(many=True, read_only=True)
-    extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
+    extra_costs = serializers.SerializerMethodField()
+    discounts = serializers.SerializerMethodField()
 
     # Define fields for the FloatToInt mixin
     float_to_int_fields = ["deposit_amount"]
@@ -430,6 +468,7 @@ class DepositDetailSerializer(
             "items",
             "invoice",
             "extra_costs",
+            "discounts",
             # CS 2
             "reminder_one",
             "reminder_two",
@@ -443,3 +482,10 @@ class DepositDetailSerializer(
     # to_representation is now handled by both mixins
     # 1. FloatToIntRepresentationMixin handles deposit_amount
     # 2. NullInvoiceIfEmptyItemsMixin handles setting invoice=None
+    def get_extra_costs(self, obj):
+        qs = obj.extra_costs.exclude(type="discount")
+        return OrderExtraCostSerializer(qs, many=True).data
+
+    def get_discounts(self, obj):
+        qs = obj.extra_costs.filter(type="discount")
+        return OrderExtraCostSerializer(qs, many=True).data
