@@ -10,6 +10,7 @@ from core.common.serializers import BaseModelSerializer
 from services.customer.models.customer import Customer
 from services.customer.rest.customer.serializers import CustomerSerializer
 from services.deposit.models.deposit import Deposit
+from services.forecast.models.forecast import Forecast
 from services.order.models import Order, OrderItem
 from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
@@ -356,6 +357,7 @@ class OrderItemListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer
     fabric_type = serializers.CharField(source="fabric_type.name")
     unit = serializers.SerializerMethodField()
     # subtotal = serializers.SerializerMethodField()
+    has_forecast = serializers.SerializerMethodField()
 
     # Define fields for the mixin
     float_to_int_fields = ["price"]
@@ -369,9 +371,12 @@ class OrderItemListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer
             "price",
             "quantity",
             "subtotal",
+            "has_forecast",
         ]
 
     # to_representation is now handled by FloatToIntRepresentationMixin
+    def get_has_forecast(self, instance):
+        return Forecast.objects.filter(order_item=instance).exists()
 
     def get_product_name(self, instance):
         product = getattr(instance, "product", None)
@@ -542,6 +547,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
     # extra_costs = OrderExtraCostSerializer(many=True, read_only=True)
     items = _OrderItemSerializer(many=True, read_only=True)
     is_deposit = serializers.SerializerMethodField()
+    # has_forecast = serializers.SerializerMethodField()
 
     # Define fields for the FloatToInt mixin
     float_to_int_fields = ["deposit_amount"]
@@ -553,6 +559,7 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
             "identifier",
             "order_type",
             "is_deposit",
+            # "has_forecast",
             "convection_name",
             "customer",
             "items",
@@ -571,6 +578,9 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
     #
     def get_is_deposit(self, obj):
         return Deposit.objects.filter(order=obj).exists()
+
+    # def get_has_forecast(self, obj):
+    #     return Forecast.objects.filter(order=obj).exists()
 
     def get_detail_order(self, obj):
         """
@@ -638,6 +648,8 @@ class OrderKonveksiListSerializer(FloatToIntRepresentationMixin, BaseModelSerial
 
 
 class OrderMarketplaceListSerializer(BaseModelSerializer):
+    has_forecast = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = [
@@ -652,5 +664,9 @@ class OrderMarketplaceListSerializer(BaseModelSerializer):
             "marketplace",
             "order_choice",
             "estimated_shipping_date",
+            "has_forecast",
             "quantity",
         ]
+
+    def get_has_forecast(self, obj):
+        return Forecast.objects.filter(order=obj).exists()
