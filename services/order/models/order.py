@@ -51,7 +51,11 @@ class Order(get_subid_model()):
     convection_name = models.CharField(max_length=150, blank=True, null=True)
     order_type = models.CharField(
         max_length=20,
-        choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")],
+        choices=[
+            ("konveksi", "Konveksi"),
+            ("marketplace", "Marketplace"),
+            ("express", "Express"),
+        ],
     )
     priority_status = models.CharField(
         max_length=20,

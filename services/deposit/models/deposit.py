@@ -44,7 +44,7 @@ class Deposit(get_subid_model()):
     )
     priority_status = models.CharField(
         max_length=20,
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")],
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent"), ("express", "Express")],
         default="reguler",
     )
 

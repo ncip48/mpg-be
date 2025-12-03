@@ -329,11 +329,12 @@ class DepositViewSet(BaseViewSet):
         # vat_rate = Decimal("0.15")  # 15% VAT from image
         # tax = sub_total * vat_rate
         tax = 0
-        grand_total = sub_total + tax
+        deposit_amount = invoice.deposit.deposit_amount
+        grand_total = sub_total - deposit_amount
 
         totals_data = [
-            # ["SUB TOTAL", f"Rp {sub_total:,.0f}"],
-            # ["TAX VAT 15%", f"Rp {tax:,.0f}"],
+            ["SUB TOTAL", f"Rp {sub_total:,.0f}"],
+            ["Deposit", f"Rp -{deposit_amount:,.0f}"],
             [
                 Paragraph("<b>GRAND TOTAL</b>", styles["Bold"]),
                 Paragraph(f"<b>Rp {grand_total:,.0f}</b>", styles["RightBold"]),

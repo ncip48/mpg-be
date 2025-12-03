@@ -348,6 +348,8 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
             "marketplace",
             "email_send_date",
             "session",
+            "preview_print_front",
+            "preview_print_back",
             "details",
         ]
         read_only_fields = ["pk"]
