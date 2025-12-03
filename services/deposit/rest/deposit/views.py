@@ -240,14 +240,14 @@ class DepositViewSet(BaseViewSet):
                 [
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
                     # background for entire header
-                    ("BACKGROUND", (0, 0), (-1, -1), colors.lightgrey),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFAFA")),
                     # global padding
                     ("LEFTPADDING", (0, 0), (-1, -1), 65),  # left padding 10px
                     ("RIGHTPADDING", (0, 0), (-1, -1), 65),  # right padding 10px
                     ("TOPPADDING", (0, 0), (-1, -1), 0),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 20),
                     # optional border
-                    ("BOX", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#FAFAFA")),
                 ]
             )
         )
