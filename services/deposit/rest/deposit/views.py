@@ -129,8 +129,8 @@ class DepositViewSet(BaseViewSet):
         doc = SimpleDocTemplate(
             buffer,
             pagesize=A4,
-            rightMargin=20 * mm,
-            leftMargin=20 * mm,
+            rightMargin=0 * mm,
+            leftMargin=0 * mm,
             topMargin=-3.5 * mm,
             bottomMargin=20 * mm,
         )
@@ -230,8 +230,26 @@ class DepositViewSet(BaseViewSet):
         # Combine Header
         header_table = Table(
             [[bill_to, invoice_info]],
-            colWidths=[100 * mm, 70 * mm],
+            colWidths=[105 * mm, 105 * mm],
             style=[("VALIGN", (0, 0), (-1, -1), "TOP")],
+        )
+
+        # Add padding to the entire header block
+        header_table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    # background for entire header
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.lightgrey),
+                    # global padding
+                    ("LEFTPADDING", (0, 0), (-1, -1), 65),  # left padding 10px
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 65),  # right padding 10px
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 20),
+                    # optional border
+                    ("BOX", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                ]
+            )
         )
         elements.append(header_table)
         elements.append(Spacer(1, 10 * mm))
@@ -316,6 +334,15 @@ class DepositViewSet(BaseViewSet):
                     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                     ("VALIGN", (0, 1), (-1, -1), "TOP"),
                     ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    # Outer left border
+                    ("LINEBEFORE", (0, 0), (0, -1), 0.5, colors.lightgrey),
+                    # Inner vertical dividers
+                    ("LINEBEFORE", (1, 0), (1, -1), 0.5, colors.lightgrey),
+                    ("LINEBEFORE", (2, 0), (2, -1), 0.5, colors.lightgrey),
+                    ("LINEBEFORE", (3, 0), (3, -1), 0.5, colors.lightgrey),
+                    ("LINEBEFORE", (4, 0), (4, -1), 0.5, colors.lightgrey),
+                    # Outer right border
+                    ("LINEAFTER", (4, 0), (4, -1), 0.5, colors.lightgrey),
                     ("ALIGN", (0, 0), (-1, 0), "LEFT"),
                     ("ALIGN", (2, 0), (-1, 0), "RIGHT"),
                 ]
@@ -336,7 +363,7 @@ class DepositViewSet(BaseViewSet):
             ["SUB TOTAL", f"Rp {sub_total:,.0f}"],
             ["Deposit", f"Rp -{deposit_amount:,.0f}"],
             [
-                Paragraph("<b>GRAND TOTAL</b>", styles["Bold"]),
+                Paragraph("<b>GRAND TOTAL</b>", styles["RightBold"]),
                 Paragraph(f"<b>Rp {grand_total:,.0f}</b>", styles["RightBold"]),
             ],
         ]
@@ -360,7 +387,20 @@ class DepositViewSet(BaseViewSet):
             )
         )
         totals_table.hAlign = "RIGHT"
-        elements.append(totals_table)
+        # ---- RIGHT MARGIN WRAPPER (65 mm) ----
+        totals_wrapper = Table(
+            [[Spacer(1, 1), totals_table]],
+            colWidths=[87 * mm, 75 * mm],  # 65mm margin, rest for totals
+        )
+        totals_wrapper.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+
+        elements.append(totals_wrapper)
         elements.append(Spacer(1, 10 * mm))
 
         # # --- 4. FOOTER (Payment, Terms, Signature) ---
@@ -403,8 +443,9 @@ class DepositViewSet(BaseViewSet):
         logo_image = None
         try:
             if os.path.exists(logo_path):
+                # ori is 170x78px
                 logo_image = Image(
-                    logo_path, width=7 * mm, height=7 * mm, hAlign="LEFT"
+                    logo_path, width=11 * mm, height=7 * mm, hAlign="LEFT"
                 )
             else:
                 print(f"⚠️ Logo not found at {logo_path}")
@@ -425,14 +466,27 @@ class DepositViewSet(BaseViewSet):
         #     Paragraph("+00 123 456 789", styles["Small"]),
         #     Paragraph("+00 123 456 789", styles["Small"]),
         # ]
+        ig_logo = Image("media/ig.png", width=6 * mm, height=6 * mm)
+        tt_logo = Image("media/tiktok.png", width=6 * mm, height=6 * mm)
         contact_web = [
-            Paragraph("IG: @ezsportswear", styles["Small"]),
-            Paragraph("Tiktok: @ezsportswear2", styles["Small"]),
+            [ig_logo, Paragraph("@ezsportswear", styles["Small"])],
+            [tt_logo, Paragraph("@ezsportswear2", styles["Small"])],
         ]
+
+        contact_web_table = Table(contact_web, colWidths=[6 * mm, 30 * mm])
+        contact_web_table.setStyle(
+            TableStyle(
+                [
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+                ]
+            )
+        )
 
         contact_table = Table(
             # [[contact_logo, contact_addr, contact_phone, contact_web]],
-            [[contact_logo, contact_addr, contact_web]],
+            [[contact_logo, contact_addr, contact_web_table]],
             # colWidths=[20 * mm, 65 * mm, 45 * mm, 40 * mm],
             colWidths=[20 * mm, 110 * mm, 40 * mm],
         )
