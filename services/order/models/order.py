@@ -54,12 +54,15 @@ class Order(get_subid_model()):
         choices=[
             ("konveksi", "Konveksi"),
             ("marketplace", "Marketplace"),
-            ("express", "Express"),
         ],
     )
     priority_status = models.CharField(
         max_length=20,
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")],
+        choices=[
+            ("reguler", "Reguler"),
+            ("urgent", "Urgent"),
+            ("express", "Express"),
+        ],
         default="reguler",
     )
     status = models.CharField(
