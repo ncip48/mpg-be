@@ -145,7 +145,8 @@ class OrderCreateSerializer(BaseModelSerializer):
         choices=[("konveksi", "Konveksi"), ("marketplace", "Marketplace")]
     )
     priority_status = serializers.ChoiceField(
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent"), ("express", "Express")],
+        default="reguler",
     )
     # items = OrderItemInputSerializer(many=True)
     # delivery_date = serializers.DateField(required=False)
