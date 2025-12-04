@@ -88,7 +88,8 @@ class DepositCreateSerializer(BaseModelSerializer):
         slug_field="subid", queryset=Order.objects.all()
     )
     priority_status = serializers.ChoiceField(
-        choices=[("reguler", "Reguler"), ("urgent", "Urgent")], default="reguler"
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent"), ("express", "Express")],
+        default="reguler",
     )
     items = OrderItemInputSerializer(many=True)
     note = serializers.CharField(required=False, allow_blank=True)
