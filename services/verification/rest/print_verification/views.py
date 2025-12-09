@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
+from services.forecast.rest.forecast.filtersets import ForecastFilterSet
 from services.verification.models.print_verification import PrintVerification
 from services.verification.rest.print_verification.serializers import (
     BasePrintVerificationSerializer,
@@ -46,6 +47,8 @@ class PrintVerificationViewSet(BaseViewSet):
         "verification.delete_print_verification",
         "verification.view_print_verification",
     ]
+
+    filterset_class = ForecastFilterSet
 
     def create(self, request, *args, **kwargs):
         serializer = BasePrintVerificationSerializer(

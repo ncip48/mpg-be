@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
+from services.forecast.rest.forecast.filtersets import ForecastFilterSet
 from services.verification.models import QCCuttingVerification
 from services.verification.rest.qc_cutting_verification.serializers import (
     BaseQCCuttingVerificationSerializer,
@@ -46,6 +47,8 @@ class QCCuttingVerificationViewSet(BaseViewSet):
         "print_verification.delete_print_verification",
         "print_verification.view_print_verification",
     ]
+
+    filterset_class = ForecastFilterSet
 
     def create(self, request, *args, **kwargs):
         serializer = BaseQCCuttingVerificationSerializer(
