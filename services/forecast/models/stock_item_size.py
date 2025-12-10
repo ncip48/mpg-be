@@ -39,6 +39,7 @@ class StockItemSize(get_subid_model()):
         related_name="stock_item_sizes",
     )
     size = models.CharField(max_length=100)
+    qty = models.PositiveIntegerField(default=0)
 
     objects = StockItemSizeManager()
 

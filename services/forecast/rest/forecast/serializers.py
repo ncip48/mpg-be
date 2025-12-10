@@ -37,12 +37,14 @@ __all__ = ("ForecastSerializer",)
 
 class StockItemSizeSerializer(BaseModelSerializer):
     size = serializers.CharField()
+    qty = serializers.IntegerField(default=0)
 
     class Meta:
         model = StockItemSize
         fields = (
             "pk",
             "size",
+            "qty",
         )
 
 
@@ -142,9 +144,9 @@ class ForecastSerializer(BaseModelSerializer):
     convection_name = serializers.SerializerMethodField()
     # sku = serializers.SerializerMethodField()
     # printer = serializers.SerializerMethodField()
-    printer = serializers.SlugRelatedField(
-        slug_field="subid", queryset=Printer.objects.all(), write_only=True
-    )
+    # printer = serializers.SlugRelatedField(
+    #     slug_field="subid", queryset=Printer.objects.all(), write_only=True
+    # )
     stock_item = StockItemInputSerializer(write_only=True)
     product_name = serializers.SerializerMethodField()
     fabric_name = serializers.SerializerMethodField()
@@ -160,7 +162,7 @@ class ForecastSerializer(BaseModelSerializer):
         model = Forecast
         fields = [
             "pk",
-            "printer",
+            # "printer",
             "customer",
             "is_stock",
             "convection_name",
@@ -203,7 +205,9 @@ class ForecastSerializer(BaseModelSerializer):
             size_upper = size_text.upper().split()
 
             # Priorities for special groups
-            for keyword in ["KIDS", "GIRL", "BOY"]:
+            for keyword in [
+                "KIDS",
+            ]:
                 if keyword in size_upper:
                     return keyword
 
@@ -220,12 +224,15 @@ class ForecastSerializer(BaseModelSerializer):
             if not sizes.exists():
                 return []
 
-            # Normalize
-            normalized = [normalize_type(s.size) for s in sizes]
+            # Normalize and sum qty by normalized type
+            result = {}
 
-            counter = Counter(normalized)
+            for s in sizes:
+                normalized = normalize_type(s.size)
+                result[normalized] = result.get(normalized, 0) + s.qty
 
-            return [{"type": t, "count": c} for t, c in counter.items()]
+            # Convert to list of dicts
+            return [{"type": t, "count": c} for t, c in result.items()]
 
         # -------------------------------
         # CASE 2: normal forecast → use OrderFormDetail
@@ -390,7 +397,11 @@ class ForecastSerializer(BaseModelSerializer):
             if sizes_data:
                 StockItemSize.objects.bulk_create(
                     [
-                        StockItemSize(stock_item=stock_item, size=size_obj["size"])
+                        StockItemSize(
+                            stock_item=stock_item,
+                            size=size_obj["size"],
+                            qty=size_obj["qty"],
+                        )
                         for size_obj in sizes_data
                     ]
                 )
