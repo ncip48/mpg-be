@@ -55,6 +55,23 @@ class Forecast(get_subid_model()):
     date_forecast = models.DateField()
     print_status = models.BooleanField(default=False)
 
+    is_stock = models.BooleanField(default=False)
+    printer = models.ForeignKey(
+        "printer.Printer",
+        on_delete=models.CASCADE,
+        related_name="forecasts",
+        null=True,
+        blank=True,
+    )
+    sku = models.CharField(max_length=255, null=True, blank=True)
+    priority_status = models.CharField(
+        max_length=20,
+        choices=[("reguler", "Reguler"), ("urgent", "Urgent"), ("express", "Express")],
+        null=True,
+        blank=True,
+    )
+    estimate_sent = models.DateField(blank=True, null=True)
+
     created_by = models.ForeignKey("account.User", on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
