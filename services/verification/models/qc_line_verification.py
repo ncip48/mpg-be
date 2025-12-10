@@ -75,11 +75,14 @@ class QCLineVerification(get_subid_model()):
     )
 
     # "Bagian yang rusak"
-    defect_area = models.CharField(
-        max_length=50,
-        choices=DefectArea.choices,
-        blank=True,
-        null=True,
+    # defect_area = models.CharField(
+    #     max_length=50,
+    #     choices=DefectArea.choices,
+    #     blank=True,
+    #     null=True,
+    #     help_text="Pilih bagian yang rusak jika tidak sesuai",
+    # )
+    defect_area = models.JSONField(
         help_text="Pilih bagian yang rusak jika tidak sesuai",
     )
 

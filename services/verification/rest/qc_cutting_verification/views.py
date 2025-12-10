@@ -82,3 +82,28 @@ class QCCuttingVerificationViewSet(BaseViewSet):
             BaseQCCuttingVerificationSerializer(qc, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+    def update(self, request, *args, **kwargs):
+        # Get Forecast
+        forecast = self.get_object()
+
+        # Find QC Line Verification linked to this Forecast
+        instance = QCCuttingVerification.objects.filter(forecast=forecast).first()
+        if not instance:
+            return Response(
+                {"detail": "QC Cutting Verification not found for this forecast."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Use BaseQCLineVerificationSerializer for updating
+        serializer = BaseQCCuttingVerificationSerializer(
+            instance, data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save()
+
+        return Response(
+            BaseQCCuttingVerificationSerializer(
+                updated, context={"request": request}
+            ).data
+        )

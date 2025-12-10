@@ -82,3 +82,26 @@ class QCLineVerificationViewSet(BaseViewSet):
             BaseQCLineVerificationSerializer(qc, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
+
+    def update(self, request, *args, **kwargs):
+        # Get Forecast
+        forecast = self.get_object()
+
+        # Find QC Line Verification linked to this Forecast
+        instance = QCLineVerification.objects.filter(forecast=forecast).first()
+        if not instance:
+            return Response(
+                {"detail": "QC Line Verification not found for this forecast."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Use BaseQCLineVerificationSerializer for updating
+        serializer = BaseQCLineVerificationSerializer(
+            instance, data=request.data, partial=True, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save()
+
+        return Response(
+            BaseQCLineVerificationSerializer(updated, context={"request": request}).data
+        )

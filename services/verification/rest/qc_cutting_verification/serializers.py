@@ -28,6 +28,8 @@ class BaseQCCuttingVerificationSerializer(BaseModelSerializer):
         write_only=True,
     )
 
+    defect_area = serializers.ListField(child=serializers.CharField(), required=False)
+
     class Meta:
         model = QCCuttingVerification
         fields = (
