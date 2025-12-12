@@ -186,7 +186,7 @@ class ForecastSerializer(BaseModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["sku"] = instance.sku if instance.is_stock else "Custom"
+        data["sku"] = self.sku(instance)
         data["printer"] = self.printer_display(instance)
         data["priority_status"] = self.priority_status(instance)
         data["estimate_sent"] = self.estimate_sent(instance)
@@ -331,6 +331,14 @@ class ForecastSerializer(BaseModelSerializer):
                 product = f"{product.marketplace} {format_tanggal_indonesia(product.email_send_date)} Sesi {product.session}"
 
         return product
+
+    def sku(self, obj):
+        if obj.is_stock:
+            stock_item = StockItem.objects.filter(forecast=obj).first()
+            sku = stock_item.product.sku if stock_item else None
+        else:
+            sku = "Custom"
+        return sku
 
     def get_fabric_name(self, obj):
         if obj.is_stock:
