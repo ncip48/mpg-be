@@ -72,13 +72,17 @@ class SewerDistribution(get_subid_model()):
     # Based on your previous inputs, size seems tied to Forecast properties.
 
     # --- 4. Accessories Checklist (Kelengkapan) ---
-    has_rib = models.BooleanField(default=False, verbose_name="Acc RIP")
-    has_collar = models.BooleanField(default=False, verbose_name="Acc Kerah")
-    has_sleeve = models.BooleanField(default=False, verbose_name="Acc Lengan")
-    has_pocket = models.BooleanField(default=False, verbose_name="Acc Saku")
+    # has_rib = models.BooleanField(default=False, verbose_name="Acc RIP")
+    # has_collar = models.BooleanField(default=False, verbose_name="Acc Kerah")
+    # has_sleeve = models.BooleanField(default=False, verbose_name="Acc Lengan")
+    # has_pocket = models.BooleanField(default=False, verbose_name="Acc Saku")
+
+    accessories = models.JSONField(default=[])
 
     # Extra notes for missing items or specific instructions
     notes = models.TextField(blank=True, null=True)
+
+    is_full = models.BooleanField(default=True, verbose_name="Apakah Lengkap")
 
     # --- 7. Barcode / Tracking System ---
     tracking_code = models.CharField(
