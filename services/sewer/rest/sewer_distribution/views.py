@@ -36,7 +36,11 @@ class SewerDistributionViewSet(BaseViewSet):
     """
 
     my_tags = ["Sewer Distribution"]
-    queryset = Forecast.objects.filter(sewer_distributions__isnull=False).distinct()
+    queryset = (
+        Forecast.objects.prefetch_related("sewer_distributions")
+        .filter(sewer_distributions__isnull=False)
+        .distinct()
+    )
     serializer_class = SewerDistributionSerializer
     lookup_field = "subid"
 

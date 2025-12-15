@@ -87,7 +87,7 @@ class QCCuttingVerificationSerializer(ForecastSerializer):
     def get_qc_cutting_verification(self, obj):
         request = self.context.get("request")
         try:
-            qc_cutting_verification = QCCuttingVerification.objects.get(forecast=obj)
+            qc_cutting_verification = obj.qc_cutting_verifications
             return BaseQCCuttingVerificationSerializer(
                 qc_cutting_verification, context={"request": request}
             ).data

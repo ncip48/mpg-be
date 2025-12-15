@@ -75,7 +75,7 @@ class QCFinishingSerializer(ForecastSerializer):
 
     def get_qc_finishing(self, obj):
         try:
-            qc = obj.qc_finishing  # OneToOne → direct access
+            qc = obj.qc_finishings  # OneToOne → direct access
             return BaseQCFinishingSerializer(qc).data
         except QCFinishing.DoesNotExist:
             return None

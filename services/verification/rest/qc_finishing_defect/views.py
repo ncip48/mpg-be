@@ -30,7 +30,7 @@ class QCFinishingDefectViewSet(BaseViewSet):
     """
 
     my_tags = ["QC Finishing Defect"]
-    queryset = Forecast.objects.all()
+    queryset = Forecast.objects.prefetch_related("qc_finishing_defects")
     serializer_class = QCFinishingDefectSerializer
     lookup_field = "subid"
 

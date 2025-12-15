@@ -31,7 +31,7 @@ class QCCuttingVerificationViewSet(BaseViewSet):
     """
 
     my_tags = ["QC Cutting Verification"]
-    queryset = Forecast.objects.all()
+    queryset = Forecast.objects.prefetch_related("qc_cutting_verifications")
     serializer_class = QCCuttingVerificationSerializer
     lookup_field = "subid"
 

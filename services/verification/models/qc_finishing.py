@@ -36,7 +36,7 @@ class QCFinishingManager(_QCFinishingManagerBase):
 class QCFinishing(get_subid_model()):
     # OneToOne: Each Forecast has exactly one verification result
     forecast = models.OneToOneField(
-        Forecast, on_delete=models.CASCADE, related_name="qc_finishing"
+        Forecast, on_delete=models.CASCADE, related_name="qc_finishings"
     )
 
     # 1. User / Personil Print (Who checked it)

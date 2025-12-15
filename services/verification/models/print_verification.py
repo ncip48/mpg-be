@@ -35,7 +35,7 @@ class PrintVerificationManager(_PrintVerificationManagerBase):
 class PrintVerification(get_subid_model()):
     # OneToOne: Each Forecast has exactly one verification result
     forecast = models.OneToOneField(
-        Forecast, on_delete=models.CASCADE, related_name="verification"
+        Forecast, on_delete=models.CASCADE, related_name="print_verifications"
     )
 
     # 1. User / Personil Print (Who checked it)

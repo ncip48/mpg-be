@@ -31,7 +31,7 @@ class QCFinishingViewSet(BaseViewSet):
     """
 
     my_tags = ["QC Finishing"]
-    queryset = Forecast.objects.all()
+    queryset = Forecast.objects.prefetch_related("qc_finishings")
     serializer_class = QCFinishingSerializer
     lookup_field = "subid"
 

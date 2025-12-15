@@ -83,7 +83,7 @@ class QCFinishingDefectSerializer(ForecastSerializer):
 
     def get_qc_finishing_defect(self, obj):
         try:
-            defect = obj.qc_finishing_defect  # OneToOne access
+            defect = obj.qc_finishing_defects  # OneToOne access
             return BaseQCFinishingDefectSerializer(defect).data
         except QCFinishingDefect.DoesNotExist:
             return None

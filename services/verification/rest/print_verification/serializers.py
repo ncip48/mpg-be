@@ -64,7 +64,7 @@ class PrintVerificationSerializer(ForecastSerializer):
 
     def get_print_verification(self, obj):
         try:
-            print_verification = PrintVerification.objects.get(forecast=obj)
+            print_verification = obj.print_verifications
             return BasePrintVerificationSerializer(print_verification).data
         except PrintVerification.DoesNotExist:
             return None

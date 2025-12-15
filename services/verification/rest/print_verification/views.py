@@ -31,7 +31,7 @@ class PrintVerificationViewSet(BaseViewSet):
     """
 
     my_tags = ["Print Verification"]
-    queryset = Forecast.objects.all()
+    queryset = Forecast.objects.prefetch_related("print_verifications")
     serializer_class = PrintVerificationSerializer
     lookup_field = "subid"
 

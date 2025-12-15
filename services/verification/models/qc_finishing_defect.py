@@ -36,7 +36,7 @@ class QCFinishingDefectManager(_QCFinishingDefectManagerBase):
 class QCFinishingDefect(get_subid_model()):
     # OneToOne: Each Forecast has exactly one verification result
     forecast = models.OneToOneField(
-        Forecast, on_delete=models.CASCADE, related_name="qc_finishing_defect"
+        Forecast, on_delete=models.CASCADE, related_name="qc_finishing_defects"
     )
 
     # 1. User / QC Finishing

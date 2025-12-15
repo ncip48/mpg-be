@@ -87,7 +87,7 @@ class QCLineVerificationSerializer(ForecastSerializer):
     def get_qc_line_verification(self, obj):
         request = self.context.get("request")
         try:
-            qc_line_verification = QCLineVerification.objects.get(forecast=obj)
+            qc_line_verification = obj.qc_line_verifications
             return BaseQCLineVerificationSerializer(
                 qc_line_verification, context={"request": request}
             ).data

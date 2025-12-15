@@ -50,7 +50,7 @@ class QCCuttingVerification(get_subid_model()):
 
     # --- Relationships ---
     forecast = models.OneToOneField(
-        Forecast, on_delete=models.CASCADE, related_name="qc_cutting_verification"
+        Forecast, on_delete=models.CASCADE, related_name="qc_cutting_verifications"
     )
 
     # --- 2. User / QC Officer ---
