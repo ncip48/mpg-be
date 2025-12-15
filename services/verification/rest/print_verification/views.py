@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from django.db import connection
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.response import Response
@@ -31,7 +32,14 @@ class PrintVerificationViewSet(BaseViewSet):
     """
 
     my_tags = ["Print Verification"]
-    queryset = Forecast.objects.prefetch_related("print_verifications")
+    queryset = Forecast.objects.select_related(
+        "print_verifications",
+        "print_verifications__verified_by",
+        "order",
+        "printer",
+    ).prefetch_related(
+        "order_item",
+    )
     serializer_class = PrintVerificationSerializer
     lookup_field = "subid"
 
@@ -49,6 +57,13 @@ class PrintVerificationViewSet(BaseViewSet):
     ]
 
     filterset_class = ForecastFilterSet
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        print("TOTAL QUERIES:", len(connection.queries))
+
+        return response
 
     def create(self, request, *args, **kwargs):
         serializer = BasePrintVerificationSerializer(

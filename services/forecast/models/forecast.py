@@ -38,7 +38,7 @@ class Forecast(get_subid_model()):
     order_item = models.ForeignKey(
         "order.OrderItem",
         on_delete=models.CASCADE,
-        related_name="fo",
+        related_name="forecasts",
         null=True,
         blank=True,
     )
