@@ -38,7 +38,8 @@ class QCFinishingViewSet(BaseViewSet):
     search_fields = [
         "order__subid",
         "order_item__subid",
-        "qc_finishing__verified_by__first_name",
+        "qc_finishings__verified_by__first_name",
+        "qc_finishings__verification_code",
     ]
 
     required_perms = [

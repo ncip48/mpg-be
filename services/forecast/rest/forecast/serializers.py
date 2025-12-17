@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from collections import Counter
 from typing import TYPE_CHECKING
 
 from django.db import transaction
@@ -18,7 +17,6 @@ from services.forecast.models.stock_item_size import StockItemSize
 from services.forecast.rest.forecast.utils import format_tanggal_indonesia
 from services.order.models.order import Order
 from services.order.models.order_form import OrderForm
-from services.order.models.order_form_detail import OrderFormDetail
 from services.order.models.order_item import OrderItem
 from services.order.rest.order.serializers import FloatToIntRepresentationMixin
 from services.printer.models.printer import Printer
@@ -155,8 +153,7 @@ class ForecastSerializer(BaseModelSerializer):
 
     created_by = serializers.SlugRelatedField(slug_field="subid", read_only=True)
 
-    details = serializers.SerializerMethodField()
-    count_po = serializers.SerializerMethodField()
+    # details = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
@@ -191,66 +188,6 @@ class ForecastSerializer(BaseModelSerializer):
         data["priority_status"] = self.priority_status(instance)
         data["estimate_sent"] = self.estimate_sent(instance)
         return data
-
-    def get_details(self, obj):
-        """
-        Normalize and group sizes for both stock and non-stock items:
-        - "L MEN" → "L"
-        - "S WOMEN" → "S"
-        - "L KIDS" → "KIDS"
-        - "XS GIRL" → "GIRL"
-        """
-
-        def normalize_type(size_text: str) -> str:
-            size_upper = size_text.upper().split()
-
-            # Priorities for special groups
-            for keyword in [
-                "KIDS",
-            ]:
-                if keyword in size_upper:
-                    return keyword
-
-            # Otherwise use the size portion (S, M, L, XL, etc.)
-            return size_upper[0]
-
-        # -------------------------------
-        # CASE 1: is_stock → read StockItemSize model
-        # -------------------------------
-        if obj.is_stock:
-            # Get all StockItemSize for this forecast
-            sizes = StockItemSize.objects.filter(stock_item__forecast=obj)
-
-            if not sizes.exists():
-                return []
-
-            # Normalize and sum qty by normalized type
-            result = {}
-
-            for s in sizes:
-                normalized = normalize_type(s.size)
-                result[normalized] = result.get(normalized, 0) + s.qty
-
-            # Convert to list of dicts
-            return [{"type": t, "count": c} for t, c in result.items()]
-
-        # -------------------------------
-        # CASE 2: normal forecast → use OrderFormDetail
-        # -------------------------------
-        if obj.order_item:
-            order_form = OrderForm.objects.filter(order_item=obj.order_item).first()
-        else:
-            order_form = OrderForm.objects.filter(order=obj.order).first()
-
-        if not order_form:
-            return []
-
-        details = OrderFormDetail.objects.filter(order_form=order_form)
-
-        normalized = [normalize_type(d.shirt_size) for d in details]
-        counter = Counter(normalized)
-
-        return [{"type": t, "count": c} for t, c in counter.items()]
 
     def printer_display(self, obj):
         if obj.is_stock:
@@ -292,30 +229,6 @@ class ForecastSerializer(BaseModelSerializer):
             customer = None
 
         return CustomerSerializerSimple(customer).data if customer else None
-
-    def get_count_po(self, obj):
-        """
-        Count ALL items in OrderFormDetail.
-        """
-
-        if obj.is_stock:
-            stock_item = StockItem.objects.filter(forecast=obj).first()
-            return stock_item.quantity
-        else:
-            # Detect source
-            if obj.order_item:
-                order_form = OrderForm.objects.filter(order_item=obj.order_item).first()
-            else:
-                order_form = OrderForm.objects.filter(order=obj.order).first()
-
-            if not order_form:
-                return 0  # total count, so return integer
-
-            # Get all detail items
-            details = OrderFormDetail.objects.filter(order_form=order_form)
-
-        # Return total number of rows/items
-        return details.count()
 
     def get_product_name(self, obj):
         if obj.is_stock:
