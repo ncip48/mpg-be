@@ -9,6 +9,8 @@ from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
+from services.sewer.models.sewer_distribution import SewerDistribution
+from services.sewer.rest.sewer.serializers import SewerSerializer
 from services.verification.models import QCCuttingVerification
 
 if TYPE_CHECKING:
@@ -77,11 +79,13 @@ class BaseQCCuttingVerificationSerializer(BaseModelSerializer):
 
 class QCCuttingVerificationSerializer(ForecastSerializer):
     qc_cutting_verification = serializers.SerializerMethodField()
+    sewer = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
         fields = ForecastSerializer.Meta.fields + [
             "qc_cutting_verification",
+            "sewer",
         ]
 
     def get_qc_cutting_verification(self, obj):
@@ -93,3 +97,15 @@ class QCCuttingVerificationSerializer(ForecastSerializer):
             ).data
         except QCCuttingVerification.DoesNotExist:
             return None
+
+    def get_sewer(self, obj):
+        sewer_distribution = (
+            SewerDistribution.objects.select_related("sewer")
+            .filter(forecast=obj)
+            .first()
+        )
+
+        if not sewer_distribution or not sewer_distribution.sewer:
+            return None
+
+        return SewerSerializer(sewer_distribution.sewer).data
