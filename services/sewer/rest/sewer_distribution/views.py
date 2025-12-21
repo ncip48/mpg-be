@@ -46,9 +46,9 @@ class SewerDistributionViewSet(BaseViewSet):
     lookup_field = "subid"
 
     search_fields = [
-        "forecast__order__subid",
-        "forecast__order_item__subid",
-        "distributed_by__first_name",
+        "order__subid",
+        "order_item__subid",
+        "sewer_distributions__distributed_by__first_name",
     ]
 
     required_perms = [
