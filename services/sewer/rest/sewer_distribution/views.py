@@ -49,6 +49,7 @@ class SewerDistributionViewSet(BaseViewSet):
         "order__subid",
         "order_item__subid",
         "sewer_distributions__distributed_by__first_name",
+        "sewer_distributions__sewer__name",
     ]
 
     required_perms = [
