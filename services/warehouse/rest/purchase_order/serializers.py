@@ -51,9 +51,9 @@ class PurchaseOrderSerializer(BaseModelSerializer):
             "qty_ordered",
             "order_date",
             "created_by",
-            "created_at",
+            "created",
         ]
-        read_only_fields = ["created_by", "created_at"]
+        read_only_fields = ["created_by", "created"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

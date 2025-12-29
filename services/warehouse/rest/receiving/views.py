@@ -25,6 +25,8 @@ class ReceivingViewSet(BaseViewSet):
     queryset = Receiving.objects.all().order_by("-date_received")
     serializer_class = ReceivingSerializer
     lookup_field = "subid"
+    ordering_fields = ["date_received"]
+    ordering = ["-date_received"]
     search_fields = ["purchase_order__po_number", "invoice_number"]
     required_perms = [
         "warehouse.add_receiving",

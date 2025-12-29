@@ -45,6 +45,6 @@ class ReceivingSerializer(BaseModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["purchase_order"] = PurchaseOrderSerializer(instance.material).data
+        data["purchase_order"] = PurchaseOrderSerializer(instance.purchase_order).data
         data["received_by"] = UserSerializerSimple(instance.received_by).data
         return data

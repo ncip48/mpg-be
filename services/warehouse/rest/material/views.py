@@ -31,6 +31,8 @@ class MaterialViewSet(BaseViewSet):
     lookup_field = "subid"
     search_fields = ["name", "code", "category"]
     filterset_fields = ["category"]
+    ordering_fields = ["pk"]
+    ordering = ["-pk"]
     required_perms = [
         "warehouse.add_material",
         "warehouse.change_material",
@@ -43,7 +45,7 @@ class MaterialViewSet(BaseViewSet):
     }
 
     @action(detail=True, methods=["get"], url_path="stock-card")
-    def stock_card(self, request: Request, pk: int | None = None) -> Response:
+    def stock_card(self, request: Request, subid: str | None = None) -> Response:
         """
         Custom Dashboard: Aggregates In/Out/Opname history for one material.
         """
@@ -101,7 +103,6 @@ class MaterialViewSet(BaseViewSet):
                     "description": f"System: {o['qty_system']} -> Actual: {o['qty_actual']}",
                     "qty_in": 0,
                     "qty_out": 0,
-                    "note": _("Adjustment"),
                 }
             )
 
