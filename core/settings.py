@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "services.verification",
     "services.sewer",
     "services.warehouse",
+    "services.ticket",
 ]
 
 MIDDLEWARE = [

@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from django.db import connection
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,11 +14,6 @@ from services.sewer.models.sewer_distribution import SewerDistribution
 from services.sewer.rest.sewer_distribution.serializers import (
     BaseSewerDistributionSerializer,
     SewerDistributionSerializer,
-)
-from services.verification.models.print_verification import PrintVerification
-from services.verification.rest.print_verification.serializers import (
-    BasePrintVerificationSerializer,
-    PrintVerificationSerializer,
 )
 
 if TYPE_CHECKING:
