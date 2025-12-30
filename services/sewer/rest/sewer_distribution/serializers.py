@@ -13,6 +13,14 @@ from services.sewer.models.sewer import Sewer
 from services.sewer.models.sewer_distribution import SewerDistribution
 from services.sewer.rest.sewer.serializers import SewerSerializer
 from services.verification.models.print_verification import PrintVerification
+from services.verification.models.qc_finishing import QCFinishing
+from services.verification.models.qc_finishing_defect import QCFinishingDefect
+from services.verification.rest.qc_finishing.serializers import (
+    BaseQCFinishingSerializer,
+)
+from services.verification.rest.qc_finishing_defect.serializers import (
+    BaseQCFinishingDefectSerializer,
+)
 
 if TYPE_CHECKING:
     pass
@@ -70,11 +78,15 @@ class BaseSewerDistributionSerializer(BaseModelSerializer):
 
 class SewerDistributionSerializer(ForecastSerializer):
     sewer_distribution = serializers.SerializerMethodField()
+    qc_finishing = serializers.SerializerMethodField()
+    qc_finishing_defect = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
         fields = ForecastSerializer.Meta.fields + [
             "sewer_distribution",
+            "qc_finishing",
+            "qc_finishing_defect",
         ]
 
     def get_sewer_distribution(self, obj):
@@ -82,4 +94,18 @@ class SewerDistributionSerializer(ForecastSerializer):
             sewer_distribution = SewerDistribution.objects.get(forecast=obj)
             return BaseSewerDistributionSerializer(sewer_distribution).data
         except SewerDistribution.DoesNotExist:
+            return None
+
+    def get_qc_finishing(self, obj):
+        try:
+            qc = obj.qc_finishings
+            return BaseQCFinishingSerializer(qc).data
+        except QCFinishing.DoesNotExist:
+            return None
+
+    def get_qc_finishing_defect(self, obj):
+        try:
+            defect = obj.qc_finishing_defects  # OneToOne access
+            return BaseQCFinishingDefectSerializer(defect).data
+        except QCFinishingDefect.DoesNotExist:
             return None

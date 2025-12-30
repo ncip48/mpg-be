@@ -32,7 +32,9 @@ class SewerDistributionViewSet(BaseViewSet):
 
     my_tags = ["Sewer Distribution"]
     queryset = (
-        Forecast.objects.prefetch_related("sewer_distributions")
+        Forecast.objects.prefetch_related(
+            "sewer_distributions", "qc_finishings", "qc_finishing_defects"
+        )
         .filter(sewer_distributions__isnull=False)
         .distinct()
     )

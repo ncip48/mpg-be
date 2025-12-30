@@ -11,6 +11,7 @@ from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
 from services.verification.models.qc_finishing import QCFinishing
+from services.verification.rest.qc_finishing.filtersets import QCFinishingFilterSet
 from services.verification.rest.qc_finishing.serializers import (
     BaseQCFinishingSerializer,
     QCFinishingSerializer,
