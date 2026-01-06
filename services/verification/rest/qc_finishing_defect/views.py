@@ -37,7 +37,8 @@ class QCFinishingDefectViewSet(BaseViewSet):
     search_fields = [
         "order__subid",
         "order_item__subid",
-        "qc_finishing_defect__checked_by__first_name",
+        "qc_finishing_defects__checked_by__first_name",
+        "sewer_distributions__tracking_code",
     ]
 
     required_perms = [

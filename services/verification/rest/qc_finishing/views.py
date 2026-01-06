@@ -41,6 +41,7 @@ class QCFinishingViewSet(BaseViewSet):
         "order_item__subid",
         "qc_finishings__verified_by__first_name",
         "qc_finishings__verification_code",
+        "sewer_distributions__tracking_code",
     ]
 
     required_perms = [
