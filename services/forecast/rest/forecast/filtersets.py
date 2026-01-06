@@ -19,11 +19,19 @@ class ForecastFilterSet(django_filters.FilterSet):
     )
     has_qc_line_verification = django_filters.BooleanFilter(
         method="filter_has_qc_line_verification",
-        label="Has QC Cutting Verification",
+        label="Has QC Line Verification",
     )
     has_print_verification = django_filters.BooleanFilter(
         method="filter_has_print_verification",
-        label="Has QC Cutting Verification",
+        label="Has Print Verification",
+    )
+    has_warehouse_delivery = django_filters.BooleanFilter(
+        method="filter_has_warehouse_delivery",
+        label="Has QC Warehouse Delivery",
+    )
+    has_warehouse_receipt = django_filters.BooleanFilter(
+        method="filter_has_warehouse_receipt",
+        label="Has QC Warehouse Delivery",
     )
 
     class Meta:
@@ -35,6 +43,8 @@ class ForecastFilterSet(django_filters.FilterSet):
             "has_qc_cutting_verification",
             "has_qc_line_verification",
             "has_print_verification",
+            "has_warehouse_delivery",
+            "has_warehouse_receipt",
         ]
 
     def filter_has_qc_finishing(self, queryset, name, value):
@@ -94,5 +104,29 @@ class ForecastFilterSet(django_filters.FilterSet):
             return queryset.filter(print_verifications__isnull=False)
         if value is False:
             return queryset.filter(print_verifications__isnull=True)
+
+        return queryset
+
+    def filter_has_warehouse_delivery(self, queryset, name, value):
+        """
+        value = True  -> Forecast WITH
+        value = False -> Forecast WITHOUT
+        """
+        if value is True:
+            return queryset.filter(warehouse_deliveries__isnull=False)
+        if value is False:
+            return queryset.filter(warehouse_deliveries__isnull=True)
+
+        return queryset
+
+    def filter_has_warehouse_receipt(self, queryset, name, value):
+        """
+        value = True  -> Forecast WITH
+        value = False -> Forecast WITHOUT
+        """
+        if value is True:
+            return queryset.filter(warehouse_receipts__isnull=False)
+        if value is False:
+            return queryset.filter(warehouse_receipts__isnull=True)
 
         return queryset

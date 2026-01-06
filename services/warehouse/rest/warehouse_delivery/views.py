@@ -11,10 +11,10 @@ from rest_framework.response import Response
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
-from services.warehouse.models import WarehouseReceipt
-from services.warehouse.rest.warehouse_receipt.serializers import (
-    BaseWarehouseReceiptSerializer,
-    WarehouseReceiptSerializer,
+from services.warehouse.models import WarehouseDelivery
+from services.warehouse.rest.warehouse_delivery.serializers import (
+    BaseWarehouseDeliverySerializer,
+    WarehouseDeliverySerializer,
 )
 
 if TYPE_CHECKING:
@@ -22,44 +22,41 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("WarehouseReceiptViewSet",)
+__all__ = ("WarehouseDeliveryViewSet",)
 
 
-class WarehouseReceiptViewSet(BaseViewSet):
+class WarehouseDeliveryViewSet(BaseViewSet):
     """
     ViewSet for Warehouse Receipt (QC Finishing Gudang).
-    One Forecast can have only ONE WarehouseReceipt.
+    One Forecast can have only ONE WarehouseDelivery.
     """
 
     my_tags = ["Warehouse Receipt"]
 
-    queryset = (
-        Forecast.objects.select_related(
-            "warehouse_receipts",
-            "warehouse_receipts__received_by",
-            "order",
-            "printer",
-        )
-        .prefetch_related(
-            "order_item",
-        )
-        .filter(warehouse_deliveries__isnull=False)
+    queryset = Forecast.objects.select_related(
+        "warehouse_deliveries",
+        "warehouse_receipts",
+        "warehouse_deliveries__delivered_by",
+        "order",
+        "printer",
+    ).prefetch_related(
+        "order_item",
     )
 
-    serializer_class = WarehouseReceiptSerializer
+    serializer_class = WarehouseDeliverySerializer
     lookup_field = "subid"
 
     search_fields = [
         "order__subid",
         "order_item__subid",
-        "warehouse_receipts__received_by__first_name",
+        "warehouse_deliveries__delivered_by__first_name",
     ]
 
     required_perms = [
-        "warehouse.add_warehouse_receipt",
-        "warehouse.change_warehouse_receipt",
-        "warehouse.delete_warehouse_receipt",
-        "warehouse.view_warehouse_receipt",
+        "warehouse.add_delivery",
+        "warehouse.change_delivery",
+        "warehouse.delete_delivery",
+        "warehouse.view_delivery",
     ]
 
     filterset_class = ForecastFilterSet
@@ -75,10 +72,10 @@ class WarehouseReceiptViewSet(BaseViewSet):
     def create(self, request, *args, **kwargs):
         """
         UPSERT behavior:
-        - If WarehouseReceipt for forecast exists → UPDATE
+        - If WarehouseDelivery for forecast exists → UPDATE
         - Otherwise → CREATE
         """
-        serializer = BaseWarehouseReceiptSerializer(
+        serializer = BaseWarehouseDeliverySerializer(
             data=request.data,
             context={"request": request},
         )
@@ -87,9 +84,9 @@ class WarehouseReceiptViewSet(BaseViewSet):
         forecast = serializer.validated_data["forecast"]
 
         instance = (
-            WarehouseReceipt.objects.filter(forecast=forecast)
+            WarehouseDelivery.objects.filter(forecast=forecast)
             .select_related(
-                "received_by",
+                "delivered_by",
                 "forecast",
             )
             .first()
@@ -97,7 +94,7 @@ class WarehouseReceiptViewSet(BaseViewSet):
 
         if instance:
             # UPDATE
-            update_serializer = BaseWarehouseReceiptSerializer(
+            update_serializer = BaseWarehouseDeliverySerializer(
                 instance,
                 data=request.data,
                 partial=True,
@@ -106,11 +103,11 @@ class WarehouseReceiptViewSet(BaseViewSet):
             update_serializer.is_valid(raise_exception=True)
 
             updated = update_serializer.save(
-                received_by=request.user,
+                delivered_by=request.user,
             )
 
             return Response(
-                BaseWarehouseReceiptSerializer(
+                BaseWarehouseDeliverySerializer(
                     updated, context={"request": request}
                 ).data,
                 status=status.HTTP_200_OK,
@@ -118,10 +115,10 @@ class WarehouseReceiptViewSet(BaseViewSet):
 
         # CREATE
         receipt = serializer.save(
-            received_by=request.user,
+            delivered_by=request.user,
         )
 
         return Response(
-            BaseWarehouseReceiptSerializer(receipt, context={"request": request}).data,
+            BaseWarehouseDeliverySerializer(receipt, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )

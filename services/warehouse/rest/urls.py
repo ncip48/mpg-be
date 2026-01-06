@@ -6,11 +6,13 @@ from .purchase_order import urls as po_urls
 from .receiving import urls as receiving_urls
 from .stock_opname import urls as so_urls
 from .supplier import urls as supplier_urls
+from .warehouse_delivery import urls as warehouse_delivery_urls
 from .warehouse_receipt import urls as warehouse_receipt_urls
 
 app_name = "warehouse"
 
 urlpatterns = [
+    path("warehouse/", include(warehouse_delivery_urls)),
     path("warehouse/", include(warehouse_receipt_urls)),
     path("warehouse/", include(supplier_urls)),
     path("warehouse/", include(material_urls)),
