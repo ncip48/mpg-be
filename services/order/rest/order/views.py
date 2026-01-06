@@ -1,35 +1,18 @@
 from __future__ import annotations
 
 import logging
-import os
-from decimal import Decimal
-from io import BytesIO
 from typing import TYPE_CHECKING
 
-from django.conf import settings
-from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
 # Report lab
-from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import mm
-from reportlab.platypus import (
-    Image,
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from core.common.viewsets import BaseViewSet
 from services.order.models import Order
-from services.order.models.invoice import Invoice
+from services.order.rest.order.filtersets import OrderFilterSet
 from services.order.rest.order.serializers import (
     OrderCreateSerializer,
     OrderDetailSerializer,
@@ -66,13 +49,14 @@ class OrderViewSet(BaseViewSet):
     )
     lookup_field = "subid"
     serializer_class = OrderListSerializer
-    filterset_fields = [
-        "order_type",
-        "priority_status",
-        "status",
-        "marketplace",
-        "order_choice",
-    ]
+    # filterset_fields = [
+    #     "order_type",
+    #     "priority_status",
+    #     "status",
+    #     "marketplace",
+    #     "order_choice",
+    # ]
+    filterset_class = OrderFilterSet
     search_fields = [
         "order_number",
         "customer__name",

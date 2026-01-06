@@ -1,12 +1,15 @@
 import django_filters
 
-from services.deposit.models import Deposit
+from services.account.models import User
 
 
 class UserFilterSet(django_filters.FilterSet):
-    # ForeignKey filters (by PK)
-    role = django_filters.CharFilter(field_name="role__subid")
+    roles = django_filters.CharFilter(method="filter_roles")
+
+    def filter_roles(self, queryset, name, value):
+        role_ids = value.split(",")
+        return queryset.filter(roles__subid__in=role_ids).distinct()
 
     class Meta:
-        model = Deposit
-        fields = ["role"]
+        model = User
+        fields = ["roles"]
