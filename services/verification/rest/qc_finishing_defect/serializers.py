@@ -73,12 +73,14 @@ class BaseQCFinishingDefectSerializer(BaseModelSerializer):
 class QCFinishingDefectSerializer(ForecastSerializer):
     qc_finishing_defect = serializers.SerializerMethodField()
     sewer = serializers.SerializerMethodField()
+    tracking_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
         fields = ForecastSerializer.Meta.fields + [
             "qc_finishing_defect",
             "sewer",
+            "tracking_code",
         ]
 
     def get_qc_finishing_defect(self, obj):
@@ -99,3 +101,7 @@ class QCFinishingDefectSerializer(ForecastSerializer):
             return None
 
         return SewerSerializer(sewer_distribution.sewer).data
+
+    def get_tracking_code(self, obj):
+        sw = SewerDistribution.objects.filter(forecast=obj).first()
+        return sw.tracking_code if sw else None

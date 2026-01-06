@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import random
+import time
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -33,8 +34,12 @@ class OrderManager(_OrderManagerBase):
     pass
 
 
+# def generate_order_id():
+#     return f"EZK-{random.randint(1000, 9999)}"
 def generate_order_id():
-    return f"EZK-{random.randint(1000, 9999)}"
+    ts = int(time.time() * 1000)
+    rand = random.randint(100, 999)
+    return f"EZK-{ts}-{rand}"
 
 
 class Order(get_subid_model()):

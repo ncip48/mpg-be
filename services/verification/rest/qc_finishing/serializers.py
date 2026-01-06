@@ -9,6 +9,7 @@ from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
+from services.sewer.models.sewer_distribution import SewerDistribution
 from services.verification.models.qc_finishing import QCFinishing
 
 if TYPE_CHECKING:
@@ -66,12 +67,11 @@ class BaseQCFinishingSerializer(BaseModelSerializer):
 
 class QCFinishingSerializer(ForecastSerializer):
     qc_finishing = serializers.SerializerMethodField()
+    tracking_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Forecast
-        fields = ForecastSerializer.Meta.fields + [
-            "qc_finishing",
-        ]
+        fields = ForecastSerializer.Meta.fields + ["qc_finishing", "tracking_code"]
 
     def get_qc_finishing(self, obj):
         try:
@@ -79,3 +79,7 @@ class QCFinishingSerializer(ForecastSerializer):
             return BaseQCFinishingSerializer(qc).data
         except QCFinishing.DoesNotExist:
             return None
+
+    def get_tracking_code(self, obj):
+        sw = SewerDistribution.objects.filter(forecast=obj).first()
+        return sw.tracking_code if sw else None
