@@ -30,7 +30,7 @@ class MaterialViewSet(BaseViewSet):
     serializer_class = MaterialSerializer
     lookup_field = "subid"
     search_fields = ["name", "code", "category"]
-    filterset_fields = ["category"]
+    filterset_fields = ["category", "unit"]
     ordering_fields = ["pk"]
     ordering = ["-pk"]
     required_perms = [
