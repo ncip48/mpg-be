@@ -11,6 +11,7 @@ from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
 from services.sewer.models.sewer_distribution import SewerDistribution
+from services.sewer.rest.sewer_distribution.filtersets import SewerDistributionFilterSet
 from services.sewer.rest.sewer_distribution.serializers import (
     BaseSewerDistributionSerializer,
     SewerDistributionSerializer,
@@ -56,7 +57,7 @@ class SewerDistributionViewSet(BaseViewSet):
         "sewer.view_sewer_distribution",
     ]
 
-    filterset_class = ForecastFilterSet
+    filterset_class = SewerDistributionFilterSet
 
     def create(self, request, *args, **kwargs):
         serializer = BaseSewerDistributionSerializer(
