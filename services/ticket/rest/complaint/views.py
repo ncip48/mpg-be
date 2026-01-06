@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from core.common.viewsets import BaseViewSet
 from services.ticket.models.complaint_action import ComplaintAction
 from services.ticket.models.complaint_ticket import ComplaintTicket
+from services.ticket.rest.complaint.filtersets import ComplaintTicketFilterSet
 from services.ticket.rest.complaint.serializers import (
     ComplaintActionSerializer,
     ComplaintTicketSerializer,
@@ -50,6 +51,8 @@ class ComplaintTicketViewSet(BaseViewSet):
     ]
 
     my_tags = ["Complaint Tickets"]
+
+    filterset_class = ComplaintTicketFilterSet
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
