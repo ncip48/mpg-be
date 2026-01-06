@@ -58,6 +58,7 @@ class OrderViewSet(BaseViewSet):
     # ]
     filterset_class = OrderFilterSet
     search_fields = [
+        "identifier",
         "order_number",
         "customer__name",
         "invoice__invoice_no",
