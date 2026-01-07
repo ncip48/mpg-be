@@ -72,6 +72,13 @@ class ComplaintTicket(get_subid_model()):
         on_delete=models.SET_NULL,
         null=True,
     )
+    order_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("konveksi", "Konveksi"),
+            ("marketplace", "Marketplace"),
+        ],
+    )
 
     customer_name = models.CharField(max_length=255)
     received_date = models.DateField()

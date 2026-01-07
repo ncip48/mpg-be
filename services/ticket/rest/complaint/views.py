@@ -38,9 +38,14 @@ class ComplaintTicketViewSet(BaseViewSet):
 
     search_fields = [
         "subid",
+        "identifier",
         "customer_name",
         "customer_id",
         "order__subid",
+    ]
+
+    filterset_fields = [
+        "order_type",
     ]
 
     required_perms = [

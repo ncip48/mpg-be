@@ -73,6 +73,7 @@ class ComplaintTicketSerializer(BaseModelSerializer):
             "pk",
             "identifier",
             "order",
+            "order_type",
             "customer_name",
             "received_date",
             "complaint_type",
