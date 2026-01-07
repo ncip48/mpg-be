@@ -14,6 +14,8 @@ class ComplaintTicketFilterSet(django_filters.FilterSet):
     # Choice fields
     status = django_filters.CharFilter(field_name="status", lookup_expr="exact")
 
+    order_type = django_filters.CharFilter(field_name="order_type", lookup_expr="exact")
+
     complaint_type = django_filters.CharFilter(
         field_name="complaint_type", lookup_expr="exact"
     )
@@ -28,6 +30,7 @@ class ComplaintTicketFilterSet(django_filters.FilterSet):
             "order",
             "created_by",
             "status",
+            "order_type",
             "complaint_type",
             "customer_name",
         ]

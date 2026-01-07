@@ -44,10 +44,6 @@ class ComplaintTicketViewSet(BaseViewSet):
         "order__subid",
     ]
 
-    filterset_fields = [
-        "order_type",
-    ]
-
     required_perms = [
         "ticket.add_complaintticket",
         "ticket.change_complaintticket",
