@@ -71,6 +71,7 @@ class ComplaintTicketSerializer(BaseModelSerializer):
         model = ComplaintTicket
         fields = [
             "pk",
+            "identifier",
             "order",
             "customer_name",
             "received_date",
