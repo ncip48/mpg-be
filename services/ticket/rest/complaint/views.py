@@ -40,8 +40,8 @@ class ComplaintTicketViewSet(BaseViewSet):
         "subid",
         "identifier",
         "customer_name",
-        "customer_id",
         "order__subid",
+        "order__identifier",
     ]
 
     required_perms = [
