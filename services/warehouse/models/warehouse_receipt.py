@@ -47,7 +47,7 @@ class WarehouseReceipt(get_subid_model()):
         verbose_name="Admin Gudang",
     )
     received_date = models.DateField(
-        auto_now_add=True, verbose_name="Tanggal Penerimaan"
+        verbose_name="Tanggal Penerimaan", null=True, blank=True
     )
 
     # 4 & 6. Detail Jumlah (Kita buat model terpisah agar rapi, atau field per size)
