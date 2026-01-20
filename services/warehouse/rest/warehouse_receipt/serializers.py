@@ -52,7 +52,6 @@ class BaseWarehouseReceiptSerializer(BaseModelSerializer):
             "updated",
         )
         read_only_fields = (
-            "received_date",
             "created",
             "updated",
         )
