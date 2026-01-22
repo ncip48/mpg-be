@@ -30,7 +30,14 @@ class MaterialStockCardService:
         receivings = receivings.annotate(
             date=F("date_received"),
             activity=Value(_("Masuk (In)"), output_field=CharField()),
-            description=F("purchase_order__supplier__name"),
+            description=Concat(
+                Value("From "),
+                F("purchase_order__supplier__name"),
+                Value(" (Inv: "),
+                F("invoice_number"),
+                Value(")"),
+                output_field=CharField(),
+            ),
             _qty_in=F("qty_received"),
             _qty_out=Value(0, output_field=IntegerField()),
         ).values(
@@ -50,7 +57,11 @@ class MaterialStockCardService:
         issuings = issuings.annotate(
             date=F("date_out"),
             activity=Value(_("Keluar (Out)"), output_field=CharField()),
-            description=Cast(F("forecast_date"), CharField()),
+            description=Concat(
+                Value("Forecast: "),
+                Cast(F("forecast_date"), CharField()),
+                output_field=CharField(),
+            ),
             _qty_in=Value(0, output_field=IntegerField()),
             _qty_out=F("qty_out"),
         ).values(
