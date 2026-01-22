@@ -50,8 +50,19 @@ class MaterialViewSet(BaseViewSet):
     def stock_card(self, request: Request, subid: str | None = None) -> Response:
         material = self.get_object()
 
-        start_date = parse_date(request.query_params.get("start_date"))
-        end_date = parse_date(request.query_params.get("end_date"))
+        start_date_raw = request.query_params.get("start_date")
+        end_date_raw = request.query_params.get("end_date")
+
+        start_date = (
+            parse_date(start_date_raw)
+            if isinstance(start_date_raw, str) and start_date_raw.strip()
+            else None
+        )
+        end_date = (
+            parse_date(end_date_raw)
+            if isinstance(end_date_raw, str) and end_date_raw.strip()
+            else None
+        )
 
         service = MaterialStockCardService(
             material=material,
