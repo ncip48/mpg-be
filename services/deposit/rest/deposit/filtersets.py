@@ -29,6 +29,6 @@ class DepositFilterSet(django_filters.FilterSet):
             )
 
         if value is False:
-            return queryset.exclude(is_expired=False)
+            return queryset.exclude(is_expired=True, is_paid_off=False)
 
         return queryset
