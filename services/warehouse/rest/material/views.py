@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from core.common.viewsets import BaseViewSet
 from services.warehouse.models import Issuing, Material, Receiving, StockOpname
 from services.warehouse.rest.material.serializers import MaterialSerializer
+from django.utils.dateparse import parse_date
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -48,24 +49,46 @@ class MaterialViewSet(BaseViewSet):
     def stock_card(self, request: Request, subid: str | None = None) -> Response:
         """
         Custom Dashboard: Aggregates In/Out/Opname history for one material.
+        Query params:
+        - start_date=YYYY-MM-DD
+        - end_date=YYYY-MM-DD
         """
         material = self.get_object()
 
+        start_date = parse_date(request.query_params.get("start_date"))
+        end_date = parse_date(request.query_params.get("end_date"))
+
+        # Base filters
+        receiving_filters = {"purchase_order__material": material}
+        issuing_filters = {"material": material}
+        opname_filters = {"material": material}
+
+        if start_date:
+            receiving_filters["date_received__gte"] = start_date
+            issuing_filters["date_out__gte"] = start_date
+            opname_filters["date_so__gte"] = start_date
+
+        if end_date:
+            receiving_filters["date_received__lte"] = end_date
+            issuing_filters["date_out__lte"] = end_date
+            opname_filters["date_so__lte"] = end_date
+
         # Fetch Transactions
         receivings = (
-            Receiving.objects.filter(purchase_order__material=material)
+            Receiving.objects.filter(**receiving_filters)
             .annotate(source_desc=F("purchase_order__supplier__name"))
             .values("date_received", "qty_received", "source_desc", "invoice_number")
         )
 
         issuings = (
-            Issuing.objects.filter(material=material)
+            Issuing.objects.filter(**issuing_filters)
             .annotate(forecast_desc=F("forecast_date"))
             .values("date_out", "qty_out", "forecast_desc")
         )
 
-        opnames = StockOpname.objects.filter(material=material).values(
-            "date_so", "qty_actual", "qty_system"
+        opnames = (
+            StockOpname.objects.filter(**opname_filters)
+            .values("date_so", "qty_actual", "qty_system")
         )
 
         history = []
@@ -114,6 +137,10 @@ class MaterialViewSet(BaseViewSet):
                 "material": material.name,
                 "current_stock": material.current_stock,
                 "unit": material.unit,
+                "filters": {
+                    "start_date": start_date,
+                    "end_date": end_date,
+                },
                 "history": history,
             }
         )
