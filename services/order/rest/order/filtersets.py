@@ -29,10 +29,12 @@ class OrderFilterSet(django_filters.FilterSet):
     order_choice = django_filters.CharFilter(
         field_name="order_choice", lookup_expr="exact"
     )
+    is_deposit = django_filters.BooleanFilter(field_name="is_deposit")
 
     class Meta:
         model = Order
         fields = [
+            "is_deposit",
             "customer",
             "order_type",
             "priority_status",
