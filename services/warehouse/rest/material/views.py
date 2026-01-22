@@ -9,9 +9,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.common.viewsets import BaseViewSet
-from services.warehouse.models import Issuing, Material, Receiving, StockOpname
+from services.warehouse.models import Material
 from services.warehouse.rest.material.serializers import MaterialSerializer
 from django.utils.dateparse import parse_date
+from services.warehouse.rest.material.services.stock_card import MaterialStockCardService
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -47,90 +48,18 @@ class MaterialViewSet(BaseViewSet):
 
     @action(detail=True, methods=["get"], url_path="stock-card")
     def stock_card(self, request: Request, subid: str | None = None) -> Response:
-        """
-        Custom Dashboard: Aggregates In/Out/Opname history for one material.
-        Query params:
-        - start_date=YYYY-MM-DD
-        - end_date=YYYY-MM-DD
-        """
         material = self.get_object()
 
         start_date = parse_date(request.query_params.get("start_date"))
         end_date = parse_date(request.query_params.get("end_date"))
 
-        # Base filters
-        receiving_filters = {"purchase_order__material": material}
-        issuing_filters = {"material": material}
-        opname_filters = {"material": material}
-
-        if start_date:
-            receiving_filters["date_received__gte"] = start_date
-            issuing_filters["date_out__gte"] = start_date
-            opname_filters["date_so__gte"] = start_date
-
-        if end_date:
-            receiving_filters["date_received__lte"] = end_date
-            issuing_filters["date_out__lte"] = end_date
-            opname_filters["date_so__lte"] = end_date
-
-        # Fetch Transactions
-        receivings = (
-            Receiving.objects.filter(**receiving_filters)
-            .annotate(source_desc=F("purchase_order__supplier__name"))
-            .values("date_received", "qty_received", "source_desc", "invoice_number")
+        service = MaterialStockCardService(
+            material=material,
+            start_date=start_date,
+            end_date=end_date,
         )
 
-        issuings = (
-            Issuing.objects.filter(**issuing_filters)
-            .annotate(forecast_desc=F("forecast_date"))
-            .values("date_out", "qty_out", "forecast_desc")
-        )
-
-        opnames = (
-            StockOpname.objects.filter(**opname_filters)
-            .values("date_so", "qty_actual", "qty_system")
-        )
-
-        history = []
-
-        # Map Receiving (IN)
-        for r in receivings:
-            history.append(
-                {
-                    "date": r["date_received"],
-                    "activity": _("Masuk (In)"),
-                    "description": f"From {r['source_desc']} (Inv: {r['invoice_number']})",
-                    "qty_in": r["qty_received"],
-                    "qty_out": 0,
-                }
-            )
-
-        # Map Issuing (OUT)
-        for i in issuings:
-            history.append(
-                {
-                    "date": i["date_out"],
-                    "activity": _("Keluar (Out)"),
-                    "description": f"Forecast: {i['forecast_desc']}",
-                    "qty_in": 0,
-                    "qty_out": i["qty_out"],
-                }
-            )
-
-        # Map Opname (ADJUST)
-        for o in opnames:
-            history.append(
-                {
-                    "date": o["date_so"],
-                    "activity": _("Stock Opname"),
-                    "description": f"System: {o['qty_system']} -> Actual: {o['qty_actual']}",
-                    "qty_in": 0,
-                    "qty_out": 0,
-                }
-            )
-
-        # Sort by date descending
-        history.sort(key=lambda x: x["date"], reverse=True)
+        history = service.get_history()
 
         return Response(
             {
@@ -141,6 +70,6 @@ class MaterialViewSet(BaseViewSet):
                     "start_date": start_date,
                     "end_date": end_date,
                 },
-                "history": history,
+                "history": list(history),  # force evaluation
             }
         )
