@@ -38,6 +38,11 @@ class SewerDistribution(get_subid_model()):
     SewerDistribution models
     """
 
+    class Type(models.TextChoices):
+        OBRAS = "OBRAS", "Obras"
+        JAHIT = "JAHIT", "Jahit"
+        OVERDECK = "OVERDECK", "Overdeck"
+
     # Link to the main Forecast
     forecast = models.ForeignKey(
         Forecast, on_delete=models.CASCADE, related_name="sewer_distributions"
@@ -60,6 +65,12 @@ class SewerDistribution(get_subid_model()):
         null=True,
         related_name="assigned_sewing_jobs",
         verbose_name="Nama Penjahit",
+    )
+
+    type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+        default=Type.JAHIT,
     )
 
     # --- 6. Quantity & Size ---

@@ -54,6 +54,7 @@ class BaseSewerDistributionSerializer(BaseModelSerializer):
             "distributed_by",
             "sewer",
             "quantity",
+            "type",
             "accessories",
             "notes",
             "tracking_code",
