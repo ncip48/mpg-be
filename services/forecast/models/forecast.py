@@ -37,9 +37,7 @@ class ForecastManager(_ForecastManagerBase):
 
 
 class Forecast(get_subid_model()):
-    forecast_number = models.CharField(
-        max_length=50, editable=False, null=True, blank=True
-    )
+    forecast_number = models.CharField(max_length=50, unique=True, editable=False)
 
     # Konveksi
     order_item = models.ForeignKey(
