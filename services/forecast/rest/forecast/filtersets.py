@@ -5,6 +5,7 @@ from services.forecast.models import Forecast
 
 class ForecastFilterSet(django_filters.FilterSet):
     is_print = django_filters.BooleanFilter(field_name="print_status")
+    print_status = django_filters.CharFilter(field_name="print_status")
     has_qc_finishing = django_filters.BooleanFilter(
         method="filter_has_qc_finishing",
         label="Has QC Finishing",
@@ -38,6 +39,7 @@ class ForecastFilterSet(django_filters.FilterSet):
         model = Forecast
         fields = [
             "is_print",
+            "print_status",
             "has_qc_finishing",
             "has_qc_finishing_defect",
             "has_qc_cutting_verification",
