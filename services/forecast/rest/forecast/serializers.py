@@ -160,6 +160,7 @@ class ForecastSerializer(BaseModelSerializer):
         fields = [
             "pk",
             # "printer",
+            "forecast_number",
             "customer",
             "is_stock",
             "convection_name",

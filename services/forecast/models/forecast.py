@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
+from datetime import timezone
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -36,6 +37,10 @@ class ForecastManager(_ForecastManagerBase):
 
 
 class Forecast(get_subid_model()):
+    forecast_number = models.CharField(
+        max_length=50, editable=False, null=True, blank=True
+    )
+
     # Konveksi
     order_item = models.ForeignKey(
         "order.OrderItem",
@@ -93,6 +98,13 @@ class Forecast(get_subid_model()):
 
     def __str__(self):
         return f"Forecasting for {self.created_by}"
+
+    def save(self, *args, **kwargs):
+        # Auto-generate FC Number if not exists (e.g., FC-202310-001)
+        if not self.forecast_number:
+            count = Forecast.objects.count() + 1
+            self.forecast_number = f"FC-{timezone.now().strftime('%Y%m')}-{count:04d}"
+        super().save(*args, **kwargs)
 
     @property
     def count_po(self) -> int:
