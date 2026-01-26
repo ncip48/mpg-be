@@ -4,6 +4,7 @@ import logging
 from collections import Counter
 from datetime import timezone
 from typing import TYPE_CHECKING
+from django.db.models import Max
 
 from django.db import models
 
@@ -98,10 +99,25 @@ class Forecast(get_subid_model()):
         return f"Forecasting for {self.created_by}"
 
     def save(self, *args, **kwargs):
-        # Auto-generate FC Number if not exists (e.g., FC-202310-001)
         if not self.forecast_number:
-            count = Forecast.objects.count() + 1
-            self.forecast_number = f"FC-{timezone.now().strftime('%Y%m')}-{count:04d}"
+            now = timezone.now()
+            ym = now.strftime("%Y%m")
+            prefix = f"FC-{ym}-"
+
+            # get last number for this month
+            last_fc = (
+                Forecast.objects.filter(forecast_number__startswith=prefix)
+                .aggregate(max_fc=Max("forecast_number"))
+                .get("max_fc")
+            )
+
+            if last_fc:
+                last_number = int(last_fc.split("-")[-1])
+            else:
+                last_number = 0
+
+            self.forecast_number = f"{prefix}{last_number + 1:04d}"
+
         super().save(*args, **kwargs)
 
     @property
