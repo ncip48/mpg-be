@@ -145,7 +145,7 @@ class ForecastSerializer(BaseModelSerializer):
     # printer = serializers.SlugRelatedField(
     #     slug_field="subid", queryset=Printer.objects.all(), write_only=True
     # )
-    stock_item = StockItemInputSerializer(write_only=True)
+    stock_item = StockItemInputSerializer(write_only=True, required=False)
     product_name = serializers.SerializerMethodField()
     fabric_name = serializers.SerializerMethodField()
     # priority_status = serializers.SerializerMethodField()
@@ -180,6 +180,19 @@ class ForecastSerializer(BaseModelSerializer):
             "count_po",
         ]
         read_only_fields = ("created", "updated", "created_by")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        request = self.context.get("request")
+        if not request:
+            return
+
+        # Works for POST & PATCH
+        is_stock = request.data.get("is_stock")
+
+        if str(is_stock).lower() in ("true", "1"):
+            self.fields["stock_item"].required = True
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
