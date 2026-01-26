@@ -46,15 +46,19 @@ class BaseSewerDistributionSerializer(BaseModelSerializer):
         write_only=True,
     )
 
+    distribution_type = serializers.ChoiceField(
+        choices=SewerDistribution.DistributionType.choices
+    )
+
     class Meta:
         model = SewerDistribution
         fields = (
             "subid",
             "forecast",
             "distributed_by",
+            "distribution_type",
             "sewer",
             "quantity",
-            "type",
             "accessories",
             "notes",
             "tracking_code",
@@ -90,12 +94,16 @@ class SewerDistributionSerializer(ForecastSerializer):
             "qc_finishing_defect",
         ]
 
+    # def get_sewer_distribution(self, obj):
+    #     try:
+    #         sewer_distribution = SewerDistribution.objects.get(forecast=obj)
+    #         return BaseSewerDistributionSerializer(sewer_distribution).data
+    #     except SewerDistribution.DoesNotExist:
+    #         return None
+
     def get_sewer_distribution(self, obj):
-        try:
-            sewer_distribution = SewerDistribution.objects.get(forecast=obj)
-            return BaseSewerDistributionSerializer(sewer_distribution).data
-        except SewerDistribution.DoesNotExist:
-            return None
+        qs = obj.sewer_distributions.all()
+        return BaseSewerDistributionSerializer(qs, many=True).data
 
     def get_qc_finishing(self, obj):
         try:

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from django.db import transaction
 import logging
 from typing import TYPE_CHECKING
+
+from django.shortcuts import get_object_or_404
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
@@ -60,36 +63,25 @@ class SewerDistributionViewSet(BaseViewSet):
     filterset_class = SewerDistributionFilterSet
 
     def create(self, request, *args, **kwargs):
-        serializer = BaseSewerDistributionSerializer(
-            data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
+        forecast = get_object_or_404(Forecast, subid=request.data["forecast"])
+        sewers_data = request.data.get("sewers", [])
 
-        forecast = serializer.validated_data["forecast"]
+        with transaction.atomic():
+            # 1️⃣ REMOVE ALL existing distributions for this forecast
+            SewerDistribution.objects.filter(forecast=forecast).delete()
 
-        # Check if record exists
-        instance = SewerDistribution.objects.filter(forecast=forecast).first()
+            created = []
 
-        if instance:
-            # Update existing record
-            update_serializer = BaseSewerDistributionSerializer(
-                instance, data=request.data, partial=True, context={"request": request}
-            )
-            update_serializer.is_valid(raise_exception=True)
-            updated = update_serializer.save(distributed_by=request.user)
-            return Response(
-                BaseSewerDistributionSerializer(
-                    updated, context={"request": request}
-                ).data,
-                status=status.HTTP_200_OK,
-            )
-
-        # Create new
-        print_verification = serializer.save(distributed_by=request.user)
+            # 2️⃣ INSERT new ones
+            for item in sewers_data:
+                serializer = BaseSewerDistributionSerializer(
+                    data={**item, "forecast": forecast.subid},
+                    context={"request": request},
+                )
+                serializer.is_valid(raise_exception=True)
+                created.append(serializer.save(distributed_by=request.user))
 
         return Response(
-            BaseSewerDistributionSerializer(
-                print_verification, context={"request": request}
-            ).data,
+            BaseSewerDistributionSerializer(created, many=True).data,
             status=status.HTTP_201_CREATED,
         )

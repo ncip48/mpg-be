@@ -38,10 +38,10 @@ class SewerDistribution(get_subid_model()):
     SewerDistribution models
     """
 
-    class Type(models.TextChoices):
-        OBRAS = "OBRAS", "Obras"
-        JAHIT = "JAHIT", "Jahit"
-        OVERDECK = "OVERDECK", "Overdeck"
+    class DistributionType(models.TextChoices):
+        OBRAS = "obras", "Obras"
+        JAHIT = "jahit", "Jahit"
+        OVERDECK = "overdeck", "Overdeck"
 
     # Link to the main Forecast
     forecast = models.ForeignKey(
@@ -67,15 +67,14 @@ class SewerDistribution(get_subid_model()):
         verbose_name="Nama Penjahit",
     )
 
-    type = models.CharField(
-        max_length=20,
-        choices=Type.choices,
-        default=Type.JAHIT,
-    )
-
     # --- 6. Quantity & Size ---
     quantity = models.PositiveIntegerField(
         help_text="Jumlah yang dibagikan ke penjahit"
+    )
+
+    distribution_type = models.CharField(
+        max_length=20,
+        choices=DistributionType.choices,
     )
 
     # If size is strictly tied to Forecast, fetch it from there.
