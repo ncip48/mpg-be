@@ -29,9 +29,7 @@ class ForecastViewSet(BaseViewSet):
     lookup_field = "subid"
 
     search_fields = [
-        "order__subid",
-        "order_item__subid",
-        "created_by__email",
+        "forecast_number",
     ]
 
     filterset_fields = [

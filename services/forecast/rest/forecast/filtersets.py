@@ -35,6 +35,21 @@ class ForecastFilterSet(django_filters.FilterSet):
         label="Has QC Warehouse Delivery",
     )
 
+    priority_status = django_filters.CharFilter(
+        field_name="priority_status", lookup_expr="exact"
+    )
+    printer = django_filters.CharFilter(
+        field_name="order_item__printer__subid", lookup_expr="exact"
+    )
+    fabric_type = django_filters.CharFilter(
+        field_name="order_item__fabric_type__subid", lookup_expr="exact"
+    )
+
+    type = django_filters.CharFilter(
+        method="filter_type",
+        label="Type",
+    )
+
     class Meta:
         model = Forecast
         fields = [
@@ -47,6 +62,10 @@ class ForecastFilterSet(django_filters.FilterSet):
             "has_print_verification",
             "has_warehouse_delivery",
             "has_warehouse_receipt",
+            "priority_status",
+            "printer",
+            "fabric_type",
+            "type",
         ]
 
     def filter_has_qc_finishing(self, queryset, name, value):
@@ -130,5 +149,15 @@ class ForecastFilterSet(django_filters.FilterSet):
             return queryset.filter(warehouse_receipts__isnull=False)
         if value is False:
             return queryset.filter(warehouse_receipts__isnull=True)
+
+        return queryset
+
+    def filter_type(self, queryset, name, value):
+        if value == "stock":
+            return queryset.filter(is_stock=True)
+        if value == "konveksi":
+            return queryset.filter(order__order_type="konveksi")
+        if value == "marketplace":
+            return queryset.filter(order__order_type="marketplace")
 
         return queryset
