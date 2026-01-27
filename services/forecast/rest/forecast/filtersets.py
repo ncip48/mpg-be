@@ -50,6 +50,11 @@ class ForecastFilterSet(django_filters.FilterSet):
         label="Type",
     )
 
+    # Print verification
+    is_approved = django_filters.BooleanFilter(
+        field_name="print_verifications__is_approved", lookup_expr="exact"
+    )
+
     class Meta:
         model = Forecast
         fields = [
@@ -66,6 +71,7 @@ class ForecastFilterSet(django_filters.FilterSet):
             "printer",
             "fabric_type",
             "type",
+            "is_approved",
         ]
 
     def filter_has_qc_finishing(self, queryset, name, value):
