@@ -29,7 +29,7 @@ class OrderFilterSet(django_filters.FilterSet):
     order_choice = django_filters.CharFilter(
         field_name="order_choice", lookup_expr="exact"
     )
-    is_deposit = django_filters.BooleanFilter(field_name="is_deposit")
+    is_deposit = django_filters.BooleanFilter(method="filter_is_deposit")
 
     class Meta:
         model = Order
@@ -43,3 +43,8 @@ class OrderFilterSet(django_filters.FilterSet):
             "order_choice",
             "created_by",
         ]
+
+    def filter_is_deposit(self, queryset, name, value):
+        if value:
+            return queryset.filter(deposits__isnull=False)
+        return queryset.filter(deposits__isnull=True)
