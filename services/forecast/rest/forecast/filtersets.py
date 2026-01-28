@@ -36,9 +36,9 @@ class ForecastFilterSet(PrinterFabricBaseFilterSet):
         label="Has QC Warehouse Delivery",
     )
 
-    priority_status = django_filters.CharFilter(
-        field_name="priority_status", lookup_expr="exact"
-    )
+    # priority_status = django_filters.CharFilter(
+    #     field_name="priority_status", lookup_expr="exact"
+    # )
 
     sewer = django_filters.CharFilter(
         field_name="sewer_distributions__sewer__subid", lookup_expr="exact"
@@ -61,7 +61,7 @@ class ForecastFilterSet(PrinterFabricBaseFilterSet):
             "has_print_verification",
             "has_warehouse_delivery",
             "has_warehouse_receipt",
-            "priority_status",
+            # "priority_status",
             # "type",
             # "is_approved",
             "sewer",
