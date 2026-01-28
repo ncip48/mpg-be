@@ -318,28 +318,22 @@ class ForecastSerializer(BaseModelSerializer):
 
     def get_progress(self, obj):
         """
-        Progress = first missing step in workflow order
+        Progress = first missing workflow step
         """
 
         steps = [
-            ("print_verifications", "Menunggu Verifikasi Print", "one"),
-            ("qc_line_verifications", "Menunggu QC Line", "many"),
-            ("qc_cutting_verifications", "Menunggu QC Cutting", "many"),
-            ("qc_finishings", "Menunggu QC Finishing", "many"),
-            ("qc_finishing_defects", "Menunggu QC Finishing Defect", "many"),
-            ("warehouse_deliveries", "Menunggu Pengiriman Gudang", "many"),
-            ("warehouse_receipts", "Menunggu Penerimaan Gudang", "many"),
+            ("print_verifications", "Menunggu Verifikasi Print"),
+            ("qc_line_verifications", "Menunggu QC Line"),
+            ("qc_cutting_verifications", "Menunggu QC Cutting"),
+            ("qc_finishings", "Menunggu QC Finishing"),
+            ("qc_finishing_defects", "Menunggu QC Finishing Defect"),
+            ("warehouse_deliveries", "Menunggu Pengiriman Gudang"),
+            ("warehouse_receipts", "Menunggu Penerimaan Gudang"),
         ]
 
-        for relation, label, rel_type in steps:
-            if rel_type == "one":
-                # OneToOneField
-                if not hasattr(obj, relation):
-                    return label
-            else:
-                # FK / M2M
-                if not getattr(obj, relation).exists():
-                    return label
+        for relation, label in steps:
+            if not hasattr(obj, relation):
+                return label
 
         return "Selesai"
 
