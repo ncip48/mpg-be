@@ -1,11 +1,12 @@
 import django_filters
+from django.db.models import Q
 
 from services.forecast.models import Forecast
 
 
 class ForecastFilterSet(django_filters.FilterSet):
     is_print = django_filters.BooleanFilter(field_name="print_status")
-    print_status = django_filters.CharFilter(field_name="print_status")
+    print_status = django_filters.BooleanFilter(field_name="print_status")
     has_qc_finishing = django_filters.BooleanFilter(
         method="filter_has_qc_finishing",
         label="Has QC Finishing",
@@ -38,12 +39,8 @@ class ForecastFilterSet(django_filters.FilterSet):
     priority_status = django_filters.CharFilter(
         field_name="priority_status", lookup_expr="exact"
     )
-    printer = django_filters.CharFilter(
-        field_name="order_item__printer__subid", lookup_expr="exact"
-    )
-    fabric_type = django_filters.CharFilter(
-        field_name="order_item__fabric_type__subid", lookup_expr="exact"
-    )
+    printer = django_filters.CharFilter(method="filter_printer")
+    fabric_type = django_filters.CharFilter(method="filter_fabric_type")
 
     type = django_filters.CharFilter(
         method="filter_type",
@@ -167,3 +164,55 @@ class ForecastFilterSet(django_filters.FilterSet):
             return queryset.filter(order__order_type="marketplace")
 
         return queryset
+
+    def filter_printer(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            # 1️⃣ stock
+            Q(
+                is_stock=True,
+                stock_items__product__printer__subid=value,
+            )
+            |
+            # 2️⃣ non-stock with order_item
+            Q(
+                is_stock=False,
+                order_item__isnull=False,
+                order_item__product__printer__subid=value,
+            )
+            |
+            # 3️⃣ non-stock without order_item → OrderForm
+            Q(
+                is_stock=False,
+                order_item__isnull=True,
+                order__order_forms__printer__subid=value,
+            )
+        ).distinct()
+
+    def filter_fabric_type(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            # 1️⃣ stock
+            Q(
+                is_stock=True,
+                stock_items__fabric_type__subid=value,
+            )
+            |
+            # 2️⃣ non-stock with order_item
+            Q(
+                is_stock=False,
+                order_item__isnull=False,
+                order_item__fabric_type__subid=value,
+            )
+            |
+            # 3️⃣ non-stock without order_item → OrderForm
+            Q(
+                is_stock=False,
+                order_item__isnull=True,
+                order__order_forms__fabric_type__subid=value,
+            )
+        ).distinct()

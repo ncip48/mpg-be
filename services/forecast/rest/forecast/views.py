@@ -1,4 +1,5 @@
 from __future__ import annotations
+from services.forecast.rest.forecast.filtersets import ForecastFilterSet
 
 import logging
 from typing import TYPE_CHECKING
@@ -32,9 +33,7 @@ class ForecastViewSet(BaseViewSet):
         "forecast_number",
     ]
 
-    filterset_fields = [
-        "date_forecast",
-    ]
+    filterset_class = ForecastFilterSet
 
     required_perms = [
         "forecast.add_forecast",
