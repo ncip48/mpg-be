@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+
+from services.verification.rest.print_verification.filtersets import (
+    PrintVerificationFilterSet,
+)
+
 import logging
 from typing import TYPE_CHECKING
 
@@ -56,7 +61,7 @@ class PrintVerificationViewSet(BaseViewSet):
         "verification.view_print_verification",
     ]
 
-    filterset_class = ForecastFilterSet
+    filterset_class = PrintVerificationFilterSet
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
