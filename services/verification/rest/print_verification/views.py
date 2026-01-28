@@ -48,11 +48,7 @@ class PrintVerificationViewSet(BaseViewSet):
     serializer_class = PrintVerificationSerializer
     lookup_field = "subid"
 
-    search_fields = [
-        "forecast__order__subid",
-        "forecast__order_item__subid",
-        "verified_by__first_name",
-    ]
+    search_fields = ["forecast_number"]
 
     required_perms = [
         "verification.add_print_verification",

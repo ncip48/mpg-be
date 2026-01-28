@@ -35,9 +35,7 @@ class QCFinishingDefectViewSet(BaseViewSet):
     lookup_field = "subid"
 
     search_fields = [
-        "order__subid",
-        "order_item__subid",
-        "qc_finishing_defects__checked_by__first_name",
+        "forecast_number",
         "sewer_distributions__tracking_code",
     ]
 
