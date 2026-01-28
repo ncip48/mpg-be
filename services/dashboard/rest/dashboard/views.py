@@ -1,4 +1,8 @@
-from datetime import datetime, time
+from core.common.paginations import PageNumberPagination
+from datetime import timedelta
+from datetime import date
+
+from django.db.models import F, ExpressionWrapper, IntegerField
 
 from django.utils.dateparse import parse_date
 from rest_framework.views import APIView
@@ -64,3 +68,37 @@ class TotalComplaintView(APIView):
         qs = apply_date_filter(qs, "received_date", request)
 
         return Response({"count": qs.count()})
+
+
+class ForecastEstimateReminderView(APIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get(self, request):
+        today = date.today()
+        days_limit = int(request.query_params.get("days", 3))
+
+        qs = Forecast.objects.filter(
+            estimate_sent__isnull=False,
+            estimate_sent__gte=today,
+            estimate_sent__lte=today + timedelta(days=days_limit),
+        ).order_by("estimate_sent")
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(qs, request)
+
+        data = []
+        for f in page:
+            remaining_days = (f.estimate_sent - today).days
+
+            data.append(
+                {
+                    "pk": f.subid,
+                    "forecast_number": f.forecast_number,
+                    "estimate_sent": f.estimate_sent,
+                    "remaining_days": remaining_days,
+                    "message": f"{remaining_days} Hari tersisa",
+                }
+            )
+
+        return paginator.get_paginated_response(data)

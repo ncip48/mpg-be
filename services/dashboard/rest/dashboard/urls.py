@@ -1,3 +1,4 @@
+from services.dashboard.rest.dashboard.views import ForecastEstimateReminderView
 from django.urls import path
 
 from .views import (
@@ -12,4 +13,5 @@ urlpatterns = [
     path("total-defect/", TotalDefectView.as_view()),
     path("total-order/", TotalOrderView.as_view()),
     path("total-complaint/", TotalComplaintView.as_view()),
+    path("forecast-reminder/", ForecastEstimateReminderView.as_view()),
 ]
