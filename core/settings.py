@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "services.sewer",
     "services.warehouse",
     "services.ticket",
+    "services.dashboard",
 ]
 
 MIDDLEWARE = [
