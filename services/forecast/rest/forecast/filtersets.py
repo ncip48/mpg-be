@@ -40,6 +40,10 @@ class ForecastFilterSet(PrinterFabricBaseFilterSet):
         field_name="priority_status", lookup_expr="exact"
     )
 
+    sewer = django_filters.CharFilter(
+        field_name="sewer_distributions__sewer__subid", lookup_expr="exact"
+    )
+
     # # Print verification
     # is_approved = django_filters.BooleanFilter(
     #     field_name="print_verifications__is_approved", lookup_expr="exact"
@@ -60,6 +64,7 @@ class ForecastFilterSet(PrinterFabricBaseFilterSet):
             "priority_status",
             # "type",
             # "is_approved",
+            "sewer",
         ]
 
     def filter_has_qc_finishing(self, queryset, name, value):
