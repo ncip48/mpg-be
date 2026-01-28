@@ -153,6 +153,8 @@ class ForecastSerializer(BaseModelSerializer):
 
     created_by = serializers.SlugRelatedField(slug_field="subid", read_only=True)
 
+    progress = serializers.SerializerMethodField()
+
     # details = serializers.SerializerMethodField()
 
     class Meta:
@@ -179,6 +181,7 @@ class ForecastSerializer(BaseModelSerializer):
             "updated",
             "details",
             "count_po",
+            "progress",
         ]
         read_only_fields = ("created", "updated", "created_by")
 
@@ -312,6 +315,29 @@ class ForecastSerializer(BaseModelSerializer):
                 es = obj.order.estimated_shipping_date
 
         return es
+
+    def get_progress(self, obj):
+        """
+        Progress is determined by the first missing verification step
+        following the business workflow order.
+        """
+
+        steps = [
+            ("print_verifications", "Menunggu Verifikasi Print"),
+            ("qc_line_verifications", "Menunggu QC Line"),
+            ("qc_cutting_verifications", "Menunggu QC Cutting"),
+            ("qc_finishings", "Menunggu QC Finishing"),
+            ("qc_finishing_defects", "Menunggu QC Finishing Defect"),
+            ("warehouse_deliveries", "Menunggu Pengiriman Gudang"),
+            ("warehouse_receipts", "Menunggu Penerimaan Gudang"),
+        ]
+
+        for relation, label in steps:
+            # same logic as filtersets: __isnull
+            if not getattr(obj, relation).exists():
+                return label
+
+        return "Selesai"
 
     @transaction.atomic
     def create(self, validated_data):
