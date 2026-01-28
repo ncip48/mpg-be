@@ -1,9 +1,10 @@
+from services.forecast.rest.forecast.filters.mixins import PrinterFabricBaseFilterSet
 import django_filters
 
 from services.forecast.models import Forecast
 
 
-class SewerDistributionFilterSet(django_filters.FilterSet):
+class SewerDistributionFilterSet(PrinterFabricBaseFilterSet):
     # ForeignKey → filter by subid
     forecast = django_filters.CharFilter(field_name="subid", lookup_expr="exact")
 
