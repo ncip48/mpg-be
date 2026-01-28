@@ -255,7 +255,12 @@ class ForecastSerializer(BaseModelSerializer):
                 product = product.name if product else None
             else:
                 product = OrderForm.objects.filter(order=obj.order).first()
-                product = f"{product.marketplace} {format_tanggal_indonesia(product.email_send_date)} Sesi {product.session}"
+                date = (
+                    format_tanggal_indonesia(product.email_send_date)
+                    if product.email_send_date
+                    else "-"
+                )
+                product = f"{product.marketplace} {date} Sesi {product.session}"
 
         return product
 
