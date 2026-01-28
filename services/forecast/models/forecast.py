@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
-from datetime import timezone
+from django.utils import timezone
 from typing import TYPE_CHECKING
 from django.db.models import Max
 
