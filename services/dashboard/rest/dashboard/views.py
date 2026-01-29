@@ -77,12 +77,19 @@ class ForecastEstimateReminderView(APIView):
     def get(self, request):
         today = date.today()
         days_limit = int(request.query_params.get("days", 3))
+        search = request.query_params.get("search")
 
         qs = Forecast.objects.filter(
             estimate_sent__isnull=False,
             estimate_sent__gte=today,
             estimate_sent__lte=today + timedelta(days=days_limit),
-        ).order_by("estimate_sent")
+        )
+
+        # 🔍 search by forecast_number only
+        if search:
+            qs = qs.filter(forecast_number__icontains=search)
+
+        qs = qs.order_by("estimate_sent")
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(qs, request)
