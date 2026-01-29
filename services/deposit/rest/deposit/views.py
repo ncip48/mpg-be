@@ -49,10 +49,10 @@ __all__ = ("DepositViewSet",)
 
 class DepositViewSet(BaseViewSet):
     required_perms = [
-        "order.can_add_deposit",
-        "order.can_change_deposit",
-        "order.can_delete_deposit",
-        "order.can_view_deposit",
+        "deposit.can_add_deposit",
+        "deposit.can_change_deposit",
+        "deposit.can_delete_deposit",
+        "deposit.can_view_deposit",
     ]
     my_tags = ["Deposits"]
     queryset = (
