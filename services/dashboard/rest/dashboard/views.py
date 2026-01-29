@@ -22,10 +22,10 @@ def apply_date_filter(queryset, field_name, request):
     filters = {}
 
     if start_date:
-        filters[f"{field_name}__date__gte"] = parse_date(start_date)
+        filters[f"{field_name}__gte"] = parse_date(start_date)
 
     if end_date:
-        filters[f"{field_name}__date__lte"] = parse_date(end_date)
+        filters[f"{field_name}__lte"] = parse_date(end_date)
 
     return queryset.filter(**filters)
 
@@ -45,7 +45,7 @@ class TotalDefectView(APIView):
 
     def get(self, request):
         qs = QCFinishingDefect.objects.all()
-        qs = apply_date_filter(qs, "created", request)
+        qs = apply_date_filter(qs, "created__date", request)
 
         return Response({"count": qs.count()})
 
@@ -55,7 +55,7 @@ class TotalOrderView(APIView):
 
     def get(self, request):
         qs = Order.objects.all()
-        qs = apply_date_filter(qs, "created", request)
+        qs = apply_date_filter(qs, "created__date", request)
 
         return Response({"count": qs.count()})
 
