@@ -35,6 +35,12 @@ class ForecastViewSet(BaseViewSet):
 
     search_fields = [
         "forecast_number",
+        # SKU
+        "order_item__product__sku",
+        "order__order_forms__order_item__product__sku",
+        "stock_items__product__sku",
+        # Nama Konveksi
+        "order__convection_name",
     ]
 
     filterset_class = ForecastFilterSet
