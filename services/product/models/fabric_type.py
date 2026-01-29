@@ -46,7 +46,12 @@ class FabricType(get_subid_model()):
 
     class Meta:
         default_permissions = ()
-        permissions = ()
+        permissions = [
+            ("can_add_fabric_type", "Can add fabric type"),
+            ("can_view_fabric_type", "Can view fabric type"),
+            ("can_change_fabric_type", "Can change fabric type"),
+            ("can_delete_fabric_type", "Can delete fabric type"),
+        ]
         verbose_name = _("fabric type")
         verbose_name_plural = _("fabric types")
 
