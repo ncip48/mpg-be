@@ -155,6 +155,8 @@ class ForecastSerializer(BaseModelSerializer):
 
     progress = serializers.SerializerMethodField()
 
+    lead_time = serializers.SerializerMethodField()
+
     # details = serializers.SerializerMethodField()
 
     class Meta:
@@ -182,6 +184,7 @@ class ForecastSerializer(BaseModelSerializer):
             "details",
             "count_po",
             "progress",
+            "lead_time",
         ]
         read_only_fields = ("created", "updated", "created_by")
 
@@ -336,6 +339,17 @@ class ForecastSerializer(BaseModelSerializer):
                 return label
 
         return "Selesai"
+
+    def get_lead_time(self, obj):
+        if obj.is_stock:
+            lt = 0
+        else:
+            if obj.order_item:
+                lt = obj.order_item.deposit.lead_time
+            else:
+                lt = 0
+
+        return lt
 
     @transaction.atomic
     def create(self, validated_data):
