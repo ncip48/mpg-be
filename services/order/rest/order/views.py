@@ -31,16 +31,6 @@ __all__ = ("OrderViewSet",)
 
 
 class OrderViewSet(BaseViewSet):
-    required_perms = [
-        "order.can_add_deposit",
-        "order.can_change_deposit",
-        "order.can_delete_deposit",
-        "order.can_view_deposit",
-        "order.can_add_order_marketplace",
-        "order.can_change_order_marketplace",
-        "order.can_delete_order_marketplace",
-        "order.can_view_order_marketplace",
-    ]
     my_tags = ["Orders"]
     queryset = (
         Order.objects.select_related("customer", "invoice")
@@ -71,6 +61,28 @@ class OrderViewSet(BaseViewSet):
         "partial_update": OrderCreateSerializer,
         "update": OrderCreateSerializer,
     }
+    required_perms = []  # fallback
+
+    def get_required_perms(self):
+        order_type = self.request.query_params.get("order_type")
+
+        if order_type == "marketplace":
+            return [
+                "order.can_add_order_marketplace",
+                "order.can_change_order_marketplace",
+                "order.can_delete_order_marketplace",
+                "order.can_view_order_marketplace",
+            ]
+
+        if order_type == "konveksi":
+            return [
+                "order.can_add_deposit",
+                "order.can_change_deposit",
+                "order.can_delete_deposit",
+                "order.can_view_deposit",
+            ]
+
+        return []
 
     def get_serializer_class(self):
         """
