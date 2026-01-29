@@ -76,10 +76,10 @@ class OrderViewSet(BaseViewSet):
 
         if order_type == "konveksi":
             return [
-                "order.can_add_order",
-                "order.can_change_order",
-                "order.can_delete_order",
-                "order.can_view_order",
+                "order.add_order",
+                "order.change_order",
+                "order.delete_order",
+                "order.view_order",
             ]
 
         return []
