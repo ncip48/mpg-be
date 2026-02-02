@@ -323,21 +323,25 @@ class ForecastSerializer(BaseModelSerializer):
         """
         Progress = first missing workflow step
         """
-
+    
         steps = [
             ("print_verifications", "Menunggu Verifikasi Print"),
             ("qc_line_verifications", "Menunggu QC Line"),
             ("qc_cutting_verifications", "Menunggu QC Cutting"),
-            ("qc_finishings", "Menunggu QC Finishing"),
-            ("qc_finishing_defects", "Menunggu QC Finishing Defect"),
+            (("qc_finishings", "qc_finishing_defects"), "Menunggu QC Finishing"),
             ("warehouse_deliveries", "Menunggu Pengiriman Gudang"),
             ("warehouse_receipts", "Menunggu Penerimaan Gudang"),
         ]
-
+    
         for relation, label in steps:
-            if not hasattr(obj, relation):
-                return label
-
+            # if relation is grouped
+            if isinstance(relation, (list, tuple)):
+                if not all(hasattr(obj, r) for r in relation):
+                    return label
+            else:
+                if not hasattr(obj, relation):
+                    return label
+    
         return "Selesai"
 
     def get_lead_time(self, obj):
