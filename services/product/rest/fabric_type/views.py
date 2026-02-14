@@ -24,6 +24,8 @@ class FabricTypeViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "kain"
+
     queryset = FabricType.objects.prefetch_related(
         "fabric_prices__variant_type",
     )

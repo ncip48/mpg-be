@@ -11,19 +11,23 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "PrinterViewSet",
-)
+__all__ = ("PrinterViewSet",)
+
 
 class PrinterViewSet(BaseViewSet):
     """
     A viewset for viewing and editing printers.
     Accessible only by superusers.
     """
+
+    required_module_code = "printer"
+
     queryset = Printer.objects.all()
     serializer_class = PrinterSerializer
     lookup_field = "subid"
-    search_fields = ["name",]
+    search_fields = [
+        "name",
+    ]
     required_perms = [
         "printer.add_printer",
         "printer.change_printer",

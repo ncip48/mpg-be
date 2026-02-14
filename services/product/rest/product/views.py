@@ -32,6 +32,8 @@ class ProductViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "master-produk"
+
     my_tags = ["Products"]
     queryset = Product.objects.all().select_related("store", "printer")
     serializer_class = ProductSerializer

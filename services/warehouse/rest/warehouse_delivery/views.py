@@ -31,6 +31,8 @@ class WarehouseDeliveryViewSet(BaseViewSet):
     One Forecast can have only ONE WarehouseDelivery.
     """
 
+    required_module_code = "pengiriman-warehouse"
+
     my_tags = ["Warehouse Receipt"]
 
     queryset = Forecast.objects.select_related(

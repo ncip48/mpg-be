@@ -22,6 +22,8 @@ class SupplierViewSet(BaseViewSet):
     A viewset for managing suppliers.
     """
 
+    required_module_code = "raw-material-supplier"
+
     queryset = Supplier.objects.all()
     serializer_class = SupplierSerializer
     lookup_field = "subid"

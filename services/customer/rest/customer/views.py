@@ -29,6 +29,8 @@ class CustomerViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "kustomer"
+
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     lookup_field = "subid"

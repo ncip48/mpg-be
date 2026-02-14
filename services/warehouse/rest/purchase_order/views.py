@@ -22,6 +22,8 @@ class PurchaseOrderViewSet(BaseViewSet):
     A viewset for Finance to manage POs.
     """
 
+    required_module_code = "raw-material-purchase-order"
+
     queryset = PurchaseOrder.objects.all().order_by("-created")
     serializer_class = PurchaseOrderSerializer
     lookup_field = "subid"

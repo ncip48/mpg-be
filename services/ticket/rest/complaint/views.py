@@ -32,6 +32,8 @@ class ComplaintTicketViewSet(BaseViewSet):
     ViewSet for Customer Complaint Tickets.
     """
 
+    required_module_code = "komplain"
+
     queryset = ComplaintTicket.objects.all()
     serializer_class = ComplaintTicketSerializer
     lookup_field = "subid"

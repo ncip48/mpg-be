@@ -12,7 +12,9 @@ from core.common.viewsets import BaseViewSet
 from services.warehouse.models import Material
 from services.warehouse.rest.material.serializers import MaterialSerializer
 from django.utils.dateparse import parse_date
-from services.warehouse.rest.material.services.stock_card import MaterialStockCardService
+from services.warehouse.rest.material.services.stock_card import (
+    MaterialStockCardService,
+)
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -27,6 +29,8 @@ class MaterialViewSet(BaseViewSet):
     A viewset for managing Raw Materials.
     Includes 'stock_card' dashboard action.
     """
+
+    required_module_code = "raw-material-bahan-baku"
 
     queryset = Material.objects.all()
     serializer_class = MaterialSerializer

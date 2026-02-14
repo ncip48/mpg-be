@@ -23,6 +23,8 @@ class ProductVariantTypeViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "varian-produk"
+
     queryset = ProductVariantType.objects.all()
     serializer_class = ProductVariantTypeSerializer
     lookup_field = "subid"

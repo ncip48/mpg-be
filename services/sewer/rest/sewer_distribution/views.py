@@ -34,6 +34,8 @@ class SewerDistributionViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "pembagian-penjahit"
+
     my_tags = ["Sewer Distribution"]
     queryset = (
         Forecast.objects.prefetch_related(

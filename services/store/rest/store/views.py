@@ -13,20 +13,24 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "StoreViewSet",
-)
+__all__ = ("StoreViewSet",)
+
 
 class StoreViewSet(BaseViewSet):
     """
     A viewset for viewing and editing stores.
     Accessible only by superusers.
     """
+
+    required_module_code = "toko"
+
     my_tags = ["Stores"]
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
     lookup_field = "subid"
-    search_fields = ["name",]
+    search_fields = [
+        "name",
+    ]
     required_perms = [
         "store.add_store",
         "store.change_store",

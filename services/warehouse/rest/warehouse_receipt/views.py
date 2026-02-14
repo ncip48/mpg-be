@@ -31,6 +31,8 @@ class WarehouseReceiptViewSet(BaseViewSet):
     One Forecast can have only ONE WarehouseReceipt.
     """
 
+    required_module_code = "penerimaan-warehouse"
+
     my_tags = ["Warehouse Receipt"]
 
     queryset = (

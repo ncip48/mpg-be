@@ -23,6 +23,8 @@ class SewerViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "penjahit"
+
     queryset = Sewer.objects.all()
     serializer_class = SewerSerializer
     lookup_field = "subid"
