@@ -36,6 +36,8 @@ class PrintVerificationViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "verifikasi-print"
+
     my_tags = ["Print Verification"]
     queryset = Forecast.objects.select_related(
         "print_verifications",

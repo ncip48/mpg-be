@@ -31,6 +31,8 @@ class QCFinishingViewSet(BaseViewSet):
     Accessible only by authorized users.
     """
 
+    required_module_code = "verifikasi-qc-finishing"
+
     my_tags = ["QC Finishing"]
     queryset = Forecast.objects.prefetch_related("qc_finishings")
     serializer_class = QCFinishingSerializer

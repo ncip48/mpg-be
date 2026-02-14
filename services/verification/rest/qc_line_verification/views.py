@@ -32,6 +32,8 @@ class QCLineVerificationViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "verifikasi-qc-line"
+
     my_tags = ["QC Line Verification"]
     queryset = Forecast.objects.prefetch_related("qc_line_verifications")
     serializer_class = QCLineVerificationSerializer

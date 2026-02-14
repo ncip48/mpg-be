@@ -32,6 +32,8 @@ class QCCuttingVerificationViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "verifikasi-qc-potong"
+
     my_tags = ["QC Cutting Verification"]
     queryset = Forecast.objects.prefetch_related("qc_cutting_verifications")
     serializer_class = QCCuttingVerificationSerializer
