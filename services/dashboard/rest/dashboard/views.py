@@ -1,3 +1,4 @@
+from core.common.permissions import HasModulePermission
 from core.common.paginations import PageNumberPagination
 from datetime import timedelta
 from datetime import date
@@ -71,7 +72,8 @@ class TotalComplaintView(APIView):
 
 
 class ForecastEstimateReminderView(APIView):
-    permission_classes = [IsAuthenticated]
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
     pagination_class = PageNumberPagination
 
     def get(self, request):
