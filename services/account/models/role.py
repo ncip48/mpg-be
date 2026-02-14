@@ -7,6 +7,7 @@ from django.contrib.auth.models import Permission
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from services.account.models import Module
 from core.common.models import get_subid_model
 
 if TYPE_CHECKING:
@@ -36,10 +37,17 @@ class Role(get_subid_model()):
     """
     Custom Role model to group permissions.
     """
+
     name = models.CharField(_("name"), max_length=150, unique=True)
     permissions = models.ManyToManyField(
         Permission,
         verbose_name=_("permissions"),
+        blank=True,
+    )
+    module = models.ManyToManyField(
+        Module,
+        related_name="roles",
+        verbose_name=_("modules"),
         blank=True,
     )
     color = models.CharField(
