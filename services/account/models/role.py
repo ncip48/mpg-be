@@ -46,7 +46,6 @@ class Role(get_subid_model()):
     )
     module = models.ManyToManyField(
         Module,
-        related_name="roles",
         verbose_name=_("modules"),
         blank=True,
     )
