@@ -11,17 +11,18 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = (
-    "RoleViewSet",
-)
+__all__ = ("RoleViewSet",)
+
 
 class RoleViewSet(BaseViewSet):
     """
     A viewset for viewing and editing roles.
     Accessible only by superusers.
     """
+
+    required_module_code = "role"
     my_tags = ["Roles"]
-    queryset = Role.objects.all().prefetch_related('permissions')
+    queryset = Role.objects.all().prefetch_related("permissions")
     serializer_class = RoleSerializer
     lookup_field = "subid"
     search_fields = ["name", "color"]

@@ -32,7 +32,8 @@ def apply_date_filter(queryset, field_name, request):
 
 
 class TotalForecastView(APIView):
-    permission_classes = [IsAuthenticated]
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
 
     def get(self, request):
         qs = Forecast.objects.all()
@@ -42,7 +43,8 @@ class TotalForecastView(APIView):
 
 
 class TotalDefectView(APIView):
-    permission_classes = [IsAuthenticated]
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
 
     def get(self, request):
         qs = QCFinishingDefect.objects.all()
@@ -52,7 +54,8 @@ class TotalDefectView(APIView):
 
 
 class TotalOrderView(APIView):
-    permission_classes = [IsAuthenticated]
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
 
     def get(self, request):
         qs = Order.objects.all()
@@ -62,7 +65,8 @@ class TotalOrderView(APIView):
 
 
 class TotalComplaintView(APIView):
-    permission_classes = [IsAuthenticated]
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
 
     def get(self, request):
         qs = ComplaintTicket.objects.all()

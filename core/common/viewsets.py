@@ -1,3 +1,4 @@
+from core.common.permissions import HasModulePermission
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
@@ -8,13 +9,17 @@ from core.common.permissions import HasRolePermission
 
 User = get_user_model()
 
+
 class BaseViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and managing superusers.
     Only accessible by superusers.
     Includes filter, search, ordering, and pagination.
     """
-    permission_classes = [IsAuthenticated, HasRolePermission]
+
+    required_module_code = None
+
+    permission_classes = [IsAuthenticated, HasRolePermission, HasModulePermission]
 
     # Enable filtering, searching, ordering
     filter_backends = [
@@ -32,10 +37,10 @@ class BaseViewSet(viewsets.ModelViewSet):
     # ✅ Ordering
     ordering_fields = ["created"]
     ordering = ["-created"]
-    
+
     # ✅ Pagination
     pagination_class = PageNumberPagination
-    
+
     serializer_map = None
 
     def get_serializer_class(self):
@@ -46,6 +51,6 @@ class BaseViewSet(viewsets.ModelViewSet):
         if serializer is None:
             serializer = super().get_serializer_class()
         return serializer
-    
+
     def autocomplete(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

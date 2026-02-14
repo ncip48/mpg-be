@@ -24,6 +24,7 @@ class UserViewSet(BaseViewSet):
     Accessible only by superusers.
     """
 
+    required_module_code = "user"
     queryset = User.objects.all().prefetch_related("roles").order_by("id")
     serializer_class = UserSerializer
     lookup_field = "subid"

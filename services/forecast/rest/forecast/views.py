@@ -23,6 +23,7 @@ __all__ = ("ForecastViewSet",)
 
 
 class ForecastViewSet(BaseViewSet):
+    required_module_code = "forecasting"
     """
     A viewset for viewing and editing Forecast entries.
     Accessible only by superusers.

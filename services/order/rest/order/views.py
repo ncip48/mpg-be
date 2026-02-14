@@ -31,6 +31,7 @@ __all__ = ("OrderViewSet",)
 
 
 class OrderViewSet(BaseViewSet):
+    required_module_code = "pesanan"
     my_tags = ["Orders"]
     queryset = (
         Order.objects.select_related("customer", "invoice")

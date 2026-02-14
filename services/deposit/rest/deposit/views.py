@@ -48,6 +48,7 @@ __all__ = ("DepositViewSet",)
 
 
 class DepositViewSet(BaseViewSet):
+    required_module_code = "pre-produksi"
     required_perms = [
         "deposit.can_add_deposit",
         "deposit.can_change_deposit",
