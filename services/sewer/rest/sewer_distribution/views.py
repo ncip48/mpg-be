@@ -56,12 +56,16 @@ class SewerDistributionViewSet(BaseViewSet):
         "sewer_distributions__tracking_code",
     ]
 
-    required_perms = [
-        "sewer.add_sewer_distribution",
-        "sewer.change_sewer_distribution",
-        "sewer.delete_sewer_distribution",
-        "sewer.view_sewer_distribution",
-    ]
+    permission_map = {
+        "list": ["sewer.view_sewer_distribution"],
+        "retrieve": ["sewer.view_sewer_distribution"],
+        "create": ["verification.sewer_distribution"],
+        "update": ["sewer.change_sewer_distribution"],
+        "delete": ["sewer.delete_sewer_distribution"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = SewerDistributionFilterSet
 

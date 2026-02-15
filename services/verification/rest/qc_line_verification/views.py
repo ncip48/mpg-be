@@ -41,12 +41,15 @@ class QCLineVerificationViewSet(BaseViewSet):
 
     search_fields = ["forecast_number"]
 
-    required_perms = [
-        "verification.add_print_verification",
-        "verification.change_print_verification",
-        "verification.delete_print_verification",
-        "verification.view_print_verification",
-    ]
+    permission_map = {
+        "list": ["verification.view_line"],
+        "retrieve": ["verification.view_line"],
+        "create": ["verification.verify_line"],
+        "update": ["verification.verify_line"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = QCLineVerificationFilterSet
 

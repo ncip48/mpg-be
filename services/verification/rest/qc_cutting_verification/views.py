@@ -41,12 +41,15 @@ class QCCuttingVerificationViewSet(BaseViewSet):
 
     search_fields = ["forecast_number"]
 
-    required_perms = [
-        "print_verification.add_print_verification",
-        "print_verification.change_print_verification",
-        "print_verification.delete_print_verification",
-        "print_verification.view_print_verification",
-    ]
+    permission_map = {
+        "list": ["verification.view_cutting"],
+        "retrieve": ["verification.view_cutting"],
+        "create": ["verification.verify_cutting"],
+        "update": ["verification.verify_cutting"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = QCCuttingVerificationFilterSet
 

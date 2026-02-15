@@ -41,12 +41,15 @@ class QCFinishingDefectViewSet(BaseViewSet):
         "sewer_distributions__tracking_code",
     ]
 
-    required_perms = [
-        "verification.add_qc_finishing_defect",
-        "verification.change_qc_finishing_defect",
-        "verification.delete_qc_finishing_defect",
-        "verification.view_qc_finishing_defect",
-    ]
+    permission_map = {
+        "list": ["verification.view_finishing"],
+        "retrieve": ["verification.view_finishing"],
+        "create": ["verification.verify_defect_finishing"],
+        "update": ["verification.verify_defect_finishing"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = ForecastFilterSet
 
