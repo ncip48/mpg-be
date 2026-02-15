@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from core.common.serializers import BaseModelSerializer
-from services.account.models import Role, User
+from services.account.models import Role, User, Module
 from services.account.rest.role.serializers import RoleSerializerSimple
 
 if TYPE_CHECKING:
@@ -59,9 +59,8 @@ class ProfileSerializer(BaseModelSerializer):
         """
         Returns a list of app labels (modules) the user has access to.
         """
-        permissions = obj.get_all_permissions()
-        modules = set(p.split(".")[0] for p in permissions)
-        return sorted(list(modules))
+        modules = Module.objects.filter(role__users=obj).values_list("code", flat=True)
+        return list(modules)
 
 
 class UserSerializer(BaseModelSerializer):
