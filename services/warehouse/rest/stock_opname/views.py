@@ -27,11 +27,11 @@ class StockOpnameViewSet(BaseViewSet):
     lookup_field = "subid"
     search_fields = ["material__name"]
     permission_map = {
-        "list": ["warehouse.view_stockopname"],
-        "retrieve": ["warehouse.view_stockopname"],
+        "list": ["warehouse.view_stock_opname"],
+        "retrieve": ["warehouse.view_stock_opname"],
         "create": ["warehouse.stock_opname_material"],
         "update": ["warehouse.stock_opname_material"],
-        "destroy": ["warehouse.delete_stockopname"],
+        "destroy": ["warehouse.delete_stock_opname"],
     }
 
     def get_required_perms(self):
