@@ -69,16 +69,7 @@ class QCFinishingDefect(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_qc_finishing_defect", "Can add qc finishing defect verification"),
-            ("view_qc_finishing_defect", "Can view qc finishing defect verification"),
-            (
-                "change_qc_finishing_defect",
-                "Can change qc finishing defect verification",
-            ),
-            (
-                "delete_qc_finishing_defect",
-                "Can delete qc finishing defect verification",
-            ),
+            ("verify_defect_finishing", "Can verify defect finishing verification"),
         ]
         verbose_name = "QC Finishing Defect Verification"
         verbose_name_plural = "QC Finishing Defect Verifications"

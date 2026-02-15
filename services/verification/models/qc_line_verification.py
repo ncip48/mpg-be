@@ -109,10 +109,8 @@ class QCLineVerification(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_qc_line_verification", "Can add QC line verification"),
-            ("view_qc_line_verification", "Can view QC line verification"),
-            ("change_qc_line_verification", "Can change QC line verification"),
-            ("delete_qc_line_verification", "Can delete QC line verification"),
+            ("view_line", "Can view line verification"),
+            ("verify_line", "Can verify line verification"),
         ]
         verbose_name = "QC Line Verification"
         verbose_name_plural = "QC Line Verifications"

@@ -78,10 +78,8 @@ class PrintVerification(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_print_verification", "Can add print verification"),
-            ("view_print_verification", "Can view print verification"),
-            ("change_print_verification", "Can change print verification"),
-            ("delete_print_verification", "Can delete print verification"),
+            ("view_print", "Can view print verification"),
+            ("verify_print", "Can verify print verification"),
         ]
         verbose_name = "Print Verification"
         verbose_name_plural = "Print Verifications"

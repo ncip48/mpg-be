@@ -109,10 +109,9 @@ class QCCuttingVerification(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_qc_cutting_verification", "Can add QC cutting verification"),
-            ("view_qc_cutting_verification", "Can view QC cutting verification"),
-            ("change_qc_cutting_verification", "Can change QC cutting verification"),
-            ("delete_qc_cutting_verification", "Can delete QC cutting verification"),
+            ("view_qc_cutting", "Can view qc cutting verification"),
+            ("verify_qc_cutting", "Can verify qc cutting verification"),
+            ("sewer_distribution", "Can sewer distribution"),
         ]
         verbose_name = "QC Cutting Verification"
         verbose_name_plural = "QC Cutting Verifications"
