@@ -55,8 +55,8 @@ class WarehouseDeliveryViewSet(BaseViewSet):
     ]
 
     permission_map = {
-        "list": ["warehouse.view_delivery"],
-        "retrieve": ["warehouse.view_delivery"],
+        "list": ["warehouse.view_warehouse_delivery"],
+        "retrieve": ["warehouse.view_warehouse_delivery"],
         "create": ["warehouse.deliver_warehouse_delivery"],
     }
 
