@@ -26,12 +26,17 @@ class StockOpnameViewSet(BaseViewSet):
     serializer_class = StockOpnameSerializer
     lookup_field = "subid"
     search_fields = ["material__name"]
-    required_perms = [
-        "warehouse.add_stockopname",
-        "warehouse.change_stockopname",
-        "warehouse.delete_stockopname",
-        "warehouse.view_stockopname",
-    ]
+    permission_map = {
+        "list": ["warehouse.view_stockopname"],
+        "retrieve": ["warehouse.view_stockopname"],
+        "create": ["warehouse.stock_opname_material"],
+        "update": ["warehouse.stock_opname_material"],
+        "destroy": ["warehouse.delete_stockopname"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
+
     my_tags = ["Stock Opname"]
 
     def perform_create(self, serializer):
