@@ -57,12 +57,14 @@ class WarehouseReceiptViewSet(BaseViewSet):
         "warehouse_receipts__received_by__first_name",
     ]
 
-    required_perms = [
-        "warehouse.add_warehouse_receipt",
-        "warehouse.change_warehouse_receipt",
-        "warehouse.delete_warehouse_receipt",
-        "warehouse.view_warehouse_receipt",
-    ]
+    permission_map = {
+        "list": ["warehouse.view_warehouse_receipt"],
+        "retrieve": ["warehouse.view_warehouse_receipt"],
+        "create": ["warehouse.verify_warehouse_receipt"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = ForecastFilterSet
 

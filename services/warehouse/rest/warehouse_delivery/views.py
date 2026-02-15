@@ -54,12 +54,14 @@ class WarehouseDeliveryViewSet(BaseViewSet):
         "warehouse_deliveries__delivered_by__first_name",
     ]
 
-    required_perms = [
-        "warehouse.add_delivery",
-        "warehouse.change_delivery",
-        "warehouse.delete_delivery",
-        "warehouse.view_delivery",
-    ]
+    permission_map = {
+        "list": ["warehouse.view_delivery"],
+        "retrieve": ["warehouse.view_delivery"],
+        "create": ["warehouse.deliver_warehouse_delivery"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     filterset_class = ForecastFilterSet
 
