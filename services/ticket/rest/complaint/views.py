@@ -47,10 +47,10 @@ class ComplaintTicketViewSet(BaseViewSet):
     ]
 
     required_perms = [
-        "ticket.add_complaintticket",
-        "ticket.change_complaintticket",
-        "ticket.delete_complaintticket",
-        "ticket.view_complaintticket",
+        "ticket.add_complaint_ticket",
+        "ticket.change_complaint_ticket",
+        "ticket.delete_complaint_ticket",
+        "ticket.view_complaint_ticket",
     ]
 
     my_tags = ["Complaint Tickets"]
