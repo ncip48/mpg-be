@@ -72,10 +72,8 @@ class WarehouseDelivery(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_warehouse_delivery", "Can add warehouse delivery"),
             ("view_warehouse_delivery", "Can view warehouse delivery"),
-            ("change_warehouse_delivery", "Can change warehouse delivery"),
-            ("delete_warehouse_delivery", "Can delete warehouse delivery"),
+            ("deliver_warehouse_delivery", "Can deliver warehouse delivery"),
         ]
         verbose_name = "Warehouse Delivery"
         verbose_name_plural = "Warehouse Delivery"

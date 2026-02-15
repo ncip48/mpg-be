@@ -77,10 +77,8 @@ class WarehouseReceipt(get_subid_model()):
     class Meta:
         default_permissions = ()
         permissions = [
-            ("add_warehouse_receipt", "Can add warehouse receipt"),
             ("view_warehouse_receipt", "Can view warehouse receipt"),
-            ("change_warehouse_receipt", "Can change warehouse receipt"),
-            ("delete_warehouse_receipt", "Can delete warehouse receipt"),
+            ("verify_warehouse_receipt", "Can verify warehouse receipt"),
         ]
         verbose_name = "Warehouse Receipt"
         verbose_name_plural = "Warehouse Receipts"

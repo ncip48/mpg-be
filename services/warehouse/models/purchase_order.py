@@ -60,6 +60,7 @@ class PurchaseOrder(get_subid_model()):
             ("view_purchase_order", "Can view purchase order"),
             ("change_purchase_order", "Can change purchase order"),
             ("delete_purchase_order", "Can delete purchase order"),
+            ("inbound_material", "Can inbound material"),
         ]
         verbose_name = "Purchase Order"
         verbose_name_plural = "Purchase Orders"

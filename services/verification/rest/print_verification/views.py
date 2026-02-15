@@ -52,14 +52,16 @@ class PrintVerificationViewSet(BaseViewSet):
 
     search_fields = ["forecast_number"]
 
-    required_perms = [
-        "verification.add_print_verification",
-        "verification.change_print_verification",
-        "verification.delete_print_verification",
-        "verification.view_print_verification",
-    ]
-
     filterset_class = PrintVerificationFilterSet
+
+    permission_map = {
+        "list": ["verification.view_print"],
+        "retrieve": ["verification.view_print"],
+        "create": ["verification.verify_print"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
