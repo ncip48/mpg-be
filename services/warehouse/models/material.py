@@ -70,6 +70,7 @@ class Material(get_subid_model()):
             ("view_material", "Can view material"),
             ("change_material", "Can change material"),
             ("delete_material", "Can delete material"),
+            ("outbound_material", "Can outbound material"),
             ("stock_opname_material", "Can stock opname material"),
         ]
         verbose_name = "Material"
