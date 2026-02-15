@@ -33,10 +33,10 @@ class FabricTypeViewSet(BaseViewSet):
     lookup_field = "subid"
     search_fields = ["name"]
     required_perms = [
-        "product.add_fabrictype",
-        "product.change_fabrictype",
-        "product.delete_fabrictype",
-        "product.view_fabrictype",
+        "product.can_add_fabric_type",
+        "product.can_change_fabric_type",
+        "product.can_delete_fabric_type",
+        "product.can_view_fabric_type",
     ]
     my_tags = ["Fabric Types"]
     serializer_map = {
