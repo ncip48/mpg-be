@@ -28,12 +28,17 @@ class ReceivingViewSet(BaseViewSet):
     ordering_fields = ["date_received"]
     ordering = ["-date_received"]
     search_fields = ["purchase_order__po_number", "invoice_number"]
-    required_perms = [
-        "warehouse.add_receiving",
-        "warehouse.change_receiving",
-        "warehouse.delete_receiving",
-        "warehouse.view_receiving",
-    ]
+    permission_map = {
+        "list": ["warehouse.view_receiving"],
+        "retrieve": ["warehouse.view_receiving"],
+        "create": ["warehouse.inbound_material"],
+        "update": ["warehouse.inbound_material"],
+        "destroy": ["warehouse.delete_receiving"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
+
     my_tags = ["Warehouse Receiving"]
 
     def perform_create(self, serializer):
