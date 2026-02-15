@@ -26,12 +26,18 @@ class IssuingViewSet(BaseViewSet):
     serializer_class = IssuingSerializer
     lookup_field = "subid"
     search_fields = ["material__name"]
-    required_perms = [
-        "warehouse.add_issuing",
-        "warehouse.change_issuing",
-        "warehouse.delete_issuing",
-        "warehouse.view_issuing",
-    ]
+
+    permission_map = {
+        "list": ["warehouse.outbound_material"],
+        "retrieve": ["warehouse.outbound_material"],
+        "create": ["warehouse.outbound_material"],
+        "update": ["warehouse.outbound_material"],
+        "destroy": ["warehouse.outbound_material"],
+    }
+
+    def get_required_perms(self):
+        return self.permission_map.get(self.action, [])
+
     my_tags = ["Warehouse Issuing"]
 
     def perform_create(self, serializer):
