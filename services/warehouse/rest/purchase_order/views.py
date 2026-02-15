@@ -29,10 +29,10 @@ class PurchaseOrderViewSet(BaseViewSet):
     lookup_field = "subid"
     search_fields = ["po_number", "supplier__name", "material__name"]
     required_perms = [
-        "warehouse.add_purchaseorder",
-        "warehouse.change_purchaseorder",
-        "warehouse.delete_purchaseorder",
-        "warehouse.view_purchaseorder",
+        "warehouse.add_purchase_order",
+        "warehouse.change_purchase_order",
+        "warehouse.delete_purchase_order",
+        "warehouse.view_purchase_order",
     ]
     my_tags = ["Purchase Orders"]
 
