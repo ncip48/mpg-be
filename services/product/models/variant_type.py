@@ -47,7 +47,12 @@ class ProductVariantType(get_subid_model()):
 
     class Meta:
         default_permissions = ()
-        permissions = ()
+        permissions = (
+            ("add_productvarianttype", "Can add product variant type"),
+            ("change_productvarianttype", "Can change product variant type"),
+            ("delete_productvarianttype", "Can delete product variant type"),
+            ("view_productvarianttype", "Can view product variant type"),
+        )
         verbose_name = _("product variant type")
         verbose_name_plural = _("product variant types")
 
