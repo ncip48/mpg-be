@@ -54,6 +54,10 @@ class OrderViewSet(BaseViewSet):
         "customer__name",
         "invoice__invoice_no",
         "user_name",
+        "convection_name",
+        "customer__phone",
+        "customer__address",
+        
     ]
     serializer_map = {
         "create": OrderCreateSerializer,
