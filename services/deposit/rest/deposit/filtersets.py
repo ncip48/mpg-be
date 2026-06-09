@@ -13,10 +13,12 @@ class DepositFilterSet(django_filters.FilterSet):
     is_expired = django_filters.BooleanFilter(method="filter_is_expired")
     
     is_acc_form = django_filters.BooleanFilter(method="filter_is_acc_form")
+    
+    paid_off_at = django_filters.DateTimeFromToRangeFilter()
 
     class Meta:
         model = Deposit
-        fields = ["order", "is_paid_off", "is_expired", "created_by"]
+        fields = ["order", "is_paid_off", "is_expired", "created_by", "paid_off_at"]
 
     def filter_is_expired(self, queryset, name, value):
         """

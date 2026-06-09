@@ -107,6 +107,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             "reminder_two",
             "is_expired",
             "is_paid_off",
+            "paid_off_at",
             "note",
             "shipping_courier",
             "extra_costs",
