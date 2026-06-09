@@ -65,10 +65,10 @@ class DepositViewSet(BaseViewSet):
     serializer_class = DepositListSerializer
     filterset_class = DepositFilterSet
     search_fields = [
-        "order_number",
-        "customer__name",
+        "order__order_number",
+        "order__customer__name",
+        "order__convection_name",
         "invoice__invoice_no",
-        "user_name",
     ]
     serializer_map = {
         "create": DepositCreateSerializer,
