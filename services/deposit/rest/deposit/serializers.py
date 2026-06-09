@@ -437,8 +437,10 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
 
         for item in items:
             qty = item.quantity or 0
+            
+            weight = item.variant_type.weight if item.variant_type else 0
 
-            total_qty += get_qty_value(item.variant_type.weight, qty)
+            total_qty += get_qty_value(weight, qty)
 
         return total_qty
 

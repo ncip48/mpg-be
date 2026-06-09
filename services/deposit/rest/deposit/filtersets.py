@@ -11,6 +11,8 @@ class DepositFilterSet(django_filters.FilterSet):
     is_paid_off = django_filters.BooleanFilter(field_name="is_paid_off")
 
     is_expired = django_filters.BooleanFilter(method="filter_is_expired")
+    
+    is_acc_form = django_filters.BooleanFilter(method="filter_is_acc_form")
 
     class Meta:
         model = Deposit
@@ -30,5 +32,16 @@ class DepositFilterSet(django_filters.FilterSet):
 
         if value is False:
             return queryset.exclude(is_expired=True, is_paid_off=False)
+
+        return queryset
+    
+    def filter_is_acc_form(self, queryset, name, value):
+        print("value =", value, type(value))
+
+        if value is True:
+            return queryset.filter(accepted_at__isnull=False)
+
+        if value is False:
+            return queryset.filter(accepted_at__isnull=True)
 
         return queryset
