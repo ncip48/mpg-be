@@ -34,8 +34,8 @@ class OrderViewSet(BaseViewSet):
     required_module_code = "pesanan"
     my_tags = ["Orders"]
     queryset = (
-        Order.objects.select_related("customer", "invoice")
-        .prefetch_related("items")
+        Order.objects.select_related("customer")
+        .prefetch_related("items", "invoice")
         .order_by("-created")
     )
     lookup_field = "subid"
