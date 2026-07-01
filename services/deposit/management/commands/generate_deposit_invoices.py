@@ -18,9 +18,9 @@ class Command(BaseCommand):
 
         for deposit in deposits:
             # Skip if invoice already exists
-            if hasattr(deposit, "invoice"):
-                skipped_count += 1
-                continue
+            # if hasattr(deposit, "invoice"):
+            #     skipped_count += 1
+            #     continue
 
             today = timezone.now().date()
             delivery_date = getattr(deposit, "delivery_date", today)
