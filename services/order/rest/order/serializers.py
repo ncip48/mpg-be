@@ -451,6 +451,9 @@ class InvoiceSummarySerializer(BaseModelSerializer):
         return 0
 
     def get_total_invoice(self, obj):
+        if obj.is_deposit_invoice:
+            return _format_decimal_as_int_or_float(obj.deposit.deposit_amount)
+        
         # Calculate total invoice from related order items
         order = getattr(obj, "order", None)
         if order and hasattr(order, "items"):
@@ -465,8 +468,8 @@ class InvoiceSummarySerializer(BaseModelSerializer):
     def get_grand_total(self, obj):
         # grand_total = total_invoice + total_extra_cost
         total_invoice = self.get_total_invoice(obj)
-        total_extra_cost = self.get_total_extra_cost(obj)
-        grand_total = total_invoice + total_extra_cost
+        total_extra_cost = self.get_total_extra_cost(obj) if not obj.is_deposit_invoice else 0
+        grand_total = total_invoice + total_extra_cost if not obj.is_deposit_invoice else obj.deposit.deposit_amount
         # Use the helper function
         return _format_decimal_as_int_or_float(grand_total)
 
