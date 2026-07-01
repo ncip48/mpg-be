@@ -29,19 +29,14 @@ class Command(BaseCommand):
                 f"DEPOSIT.{today.year}.{today.month:02d}.{deposit.pk:05d}"
             )
 
-            _, created = Invoice.objects.get_or_create(
+            Invoice.objects.create(
                 deposit=deposit,
+                status="partial",
+                invoice_no=invoice_no,
+                issued_date=today,
+                delivery_date=delivery_date,
                 is_deposit_invoice=True,
-                defaults={
-                    "status": "partial",
-                    "invoice_no": invoice_no,
-                    "issued_date": today,
-                    "delivery_date": delivery_date,
-                },
             )
-
-            if created:
-                created_count += 1
 
         self.stdout.write(
             self.style.SUCCESS(
