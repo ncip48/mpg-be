@@ -6,6 +6,9 @@ from typing import TYPE_CHECKING
 from rest_framework import status
 from rest_framework.response import Response
 
+from django.db import transaction
+
+from services.verification.models.qc_finishing import QCFinishing
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
@@ -62,33 +65,43 @@ class QCFinishingDefectViewSet(BaseViewSet):
 
         forecast = serializer.validated_data["forecast"]
 
-        # OneToOne → check existing defect record
-        instance = QCFinishingDefect.objects.filter(forecast=forecast).first()
+        with transaction.atomic():
+            # Remove accepted record if it exists
+            QCFinishing.objects.filter(forecast=forecast).delete()
 
-        if instance:
-            # Update existing defect
-            update_serializer = BaseQCFinishingDefectSerializer(
-                instance,
-                data=request.data,
-                partial=True,
-                context={"request": request},
+            # OneToOne -> update or create defect
+            instance = QCFinishingDefect.objects.filter(forecast=forecast).first()
+
+            if instance:
+                update_serializer = BaseQCFinishingDefectSerializer(
+                    instance,
+                    data=request.data,
+                    partial=True,
+                    context={"request": request},
+                )
+                update_serializer.is_valid(raise_exception=True)
+
+                defect = update_serializer.save(
+                    checked_by=request.user,
+                )
+
+                return Response(
+                    BaseQCFinishingDefectSerializer(
+                        defect,
+                        context={"request": request},
+                    ).data,
+                    status=status.HTTP_200_OK,
+                )
+
+            defect = serializer.save(
+                checked_by=request.user,
             )
-            update_serializer.is_valid(raise_exception=True)
-
-            updated = update_serializer.save(checked_by=request.user)
-
-            return Response(
-                BaseQCFinishingDefectSerializer(
-                    updated, context={"request": request}
-                ).data,
-                status=status.HTTP_200_OK,
-            )
-
-        # Create new defect record
-        defect = serializer.save(checked_by=request.user)
 
         return Response(
-            BaseQCFinishingDefectSerializer(defect, context={"request": request}).data,
+            BaseQCFinishingDefectSerializer(
+                defect,
+                context={"request": request},
+            ).data,
             status=status.HTTP_201_CREATED,
         )
 

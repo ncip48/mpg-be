@@ -7,6 +7,10 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.response import Response
 
+from django.db import transaction
+
+from services.verification.models.qc_finishing_defect import QCFinishingDefect
+
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
@@ -64,30 +68,43 @@ class QCFinishingViewSet(BaseViewSet):
 
         forecast = serializer.validated_data["forecast"]
 
-        # OneToOne → check existing QC Finishing
-        instance = QCFinishing.objects.filter(forecast=forecast).first()
+        with transaction.atomic():
+            # Remove defect record if it exists
+            QCFinishingDefect.objects.filter(forecast=forecast).delete()
 
-        if instance:
-            # Update existing QC Finishing
-            update_serializer = BaseQCFinishingSerializer(
-                instance,
-                data=request.data,
-                partial=True,
-                context={"request": request},
+            # Update existing QC Finishing if present
+            instance = QCFinishing.objects.filter(forecast=forecast).first()
+
+            if instance:
+                update_serializer = BaseQCFinishingSerializer(
+                    instance,
+                    data=request.data,
+                    partial=True,
+                    context={"request": request},
+                )
+                update_serializer.is_valid(raise_exception=True)
+
+                qc_finishing = update_serializer.save(
+                    verified_by=request.user,
+                )
+
+                return Response(
+                    BaseQCFinishingSerializer(
+                        qc_finishing,
+                        context={"request": request},
+                    ).data,
+                    status=status.HTTP_200_OK,
+                )
+
+            # Create new QC Finishing
+            qc_finishing = serializer.save(
+                verified_by=request.user,
             )
-            update_serializer.is_valid(raise_exception=True)
-
-            updated = update_serializer.save(verified_by=request.user)
-
-            return Response(
-                BaseQCFinishingSerializer(updated, context={"request": request}).data,
-                status=status.HTTP_200_OK,
-            )
-
-        # Create new QC Finishing
-        qc_finishing = serializer.save(verified_by=request.user)
 
         return Response(
-            BaseQCFinishingSerializer(qc_finishing, context={"request": request}).data,
+            BaseQCFinishingSerializer(
+                qc_finishing,
+                context={"request": request},
+            ).data,
             status=status.HTTP_201_CREATED,
         )
