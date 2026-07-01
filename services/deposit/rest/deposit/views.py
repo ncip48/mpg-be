@@ -647,6 +647,8 @@ class DepositViewSet(BaseViewSet):
         )
         elements.append(header_table)
         elements.append(Spacer(1, 10 * mm))
+        
+        deposit_amount = invoice.deposit.deposit_amount
 
         # --- 2. ITEM TABLE ---
         item_data = [
@@ -656,64 +658,15 @@ class DepositViewSet(BaseViewSet):
                 Paragraph("<b>PRICE</b>", styles["RightBold"]),
                 Paragraph("<b>QTY</b>", styles["RightBold"]),
                 Paragraph("<b>TOTAL</b>", styles["RightBold"]),
-            ]
+            ],
+            [
+                "1",
+                Paragraph("Deposit", styles["Bold"]),
+                Paragraph(f"Rp {deposit_amount:,.0f}", styles["Right"]),
+                Paragraph("1", styles["Right"]),
+                Paragraph(f"Rp {deposit_amount:,.0f}", styles["Right"]),
+            ],
         ]
-        total_invoice = Decimal("0.00")
-        total_extra_cost = Decimal("0.00")
-
-        # Add Order Items
-        for i, item in enumerate(order.items.all(), start=1):
-            subtotal = item.subtotal
-            total_invoice += subtotal
-
-            product = getattr(item, "product", None)
-            product_name = getattr(product, "name", "-")
-            variant_type = getattr(item, "variant_type", None)
-            variant_code = getattr(variant_type, "code", None)
-
-            display_name = (
-                f"{variant_code} - {product_name}" if variant_code else product_name
-            )
-
-            # Cell with main description and sub-description
-            item_description_cell = [
-                Paragraph(display_name, styles["Bold"]),
-                Paragraph(item.fabric_type.name, styles["Small"]),
-            ]
-
-            item_data.append(
-                [
-                    str(i),
-                    item_description_cell,
-                    Paragraph(f"Rp {item.price:,.0f}", styles["Right"]),
-                    Paragraph(str(item.quantity), styles["Right"]),
-                    Paragraph(f"Rp {subtotal:,.0f}", styles["Right"]),
-                ]
-            )
-
-        # Add Extra Costs
-        for i, cost in enumerate(order.extra_costs.all(), start=len(item_data)):
-            total_extra_cost += cost.total_amount
-
-            # Calculate unit price if possible, handle division by zero
-            unit_price = Decimal("0.00")
-            if cost.quantity:
-                unit_price = cost.total_amount / cost.quantity
-
-            item_description_cell = [
-                Paragraph(cost.description, styles["Bold"]),
-                Paragraph("Biaya Tambahan", styles["Small"]),
-            ]
-
-            item_data.append(
-                [
-                    str(i),
-                    item_description_cell,
-                    Paragraph(f"Rp {unit_price:,.0f}", styles["Right"]),
-                    Paragraph(str(cost.quantity), styles["Right"]),
-                    Paragraph(f"Rp {cost.total_amount:,.0f}", styles["Right"]),
-                ]
-            )
 
         item_table = Table(
             item_data,
@@ -746,16 +699,13 @@ class DepositViewSet(BaseViewSet):
         elements.append(Spacer(1, 5 * mm))
 
         # --- 3. TOTALS ---
-        sub_total = total_invoice + total_extra_cost
-        # vat_rate = Decimal("0.15")  # 15% VAT from image
-        # tax = sub_total * vat_rate
-        tax = 0
         deposit_amount = invoice.deposit.deposit_amount
-        grand_total = sub_total - deposit_amount
+
+        sub_total = deposit_amount
+        grand_total = deposit_amount
 
         totals_data = [
             ["SUB TOTAL", f"Rp {sub_total:,.0f}"],
-            ["Deposit", f"Rp -{deposit_amount:,.0f}"],
             [
                 Paragraph("<b>GRAND TOTAL</b>", styles["RightBold"]),
                 Paragraph(f"<b>Rp {grand_total:,.0f}</b>", styles["RightBold"]),
@@ -769,14 +719,8 @@ class DepositViewSet(BaseViewSet):
                     ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
                     ("TOPPADDING", (0, 0), (-1, -1), 2),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-                    (
-                        "LINEABOVE",
-                        (0, 2),
-                        (1, 2),
-                        1,
-                        colors.black,
-                    ),  # Line above grand total
-                    ("TOPPADDING", (0, 2), (1, 2), 5),
+                    ("LINEABOVE", (0, 1), (1, 1), 1, colors.black),
+                    ("TOPPADDING", (0, 1), (1, 1), 5),
                 ]
             )
         )
