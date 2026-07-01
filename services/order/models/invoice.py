@@ -35,10 +35,10 @@ class InvoiceManager(_InvoiceManagerBase):
 
 class Invoice(get_subid_model()):
     invoice_no = models.CharField(max_length=50, unique=True)
-    order = models.OneToOneField(
+    order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="invoice", null=True, blank=True
     )
-    deposit = models.OneToOneField(
+    deposit = models.ForeignKey(
         Deposit, on_delete=models.CASCADE, related_name="invoice", null=True, blank=True
     )
     issued_date = models.DateField()

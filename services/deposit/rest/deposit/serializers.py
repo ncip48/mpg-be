@@ -323,7 +323,8 @@ class DepositItemListSerializer(
 
 class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     order = OrderKonveksiListSerializer(read_only=True)
-    invoice = InvoiceSummarySerializer(read_only=True)
+    invoice = serializers.SerializerMethodField()
+    invoice_deposit = serializers.SerializerMethodField()
     items = OrderItemListSerializer(many=True, read_only=True)
     extra_costs = serializers.SerializerMethodField()
     discounts = serializers.SerializerMethodField()
@@ -343,6 +344,7 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "created",
             "items",
             "invoice",
+            "invoice_deposit",
             "extra_costs",
             "discounts",
             "detail_order",
@@ -459,6 +461,14 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             total_qty += get_qty_value(weight, qty)
 
         return total_qty
+    
+    def get_invoice(self, obj):
+        invoice = obj.invoice.filter(is_deposit_invoice=False).first()
+        return InvoiceSummarySerializer(invoice, context=self.context).data if invoice else None
+
+    def get_invoice_deposit(self, obj):
+        invoice = obj.invoice.filter(is_deposit_invoice=True).first()
+        return InvoiceSummarySerializer(invoice, context=self.context).data if invoice else None
 
 
 class DepositDetailSerializer(
