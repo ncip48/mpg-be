@@ -340,11 +340,13 @@ class DepositListSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
             "reminder_two",
             "is_expired",
             "is_paid_off",
+            "paid_off_at",
             "note",
             "shipping_courier",
             "deposit_amount",
             "accepted_at",
             "estimate_sent",
+            "pic",
         ]
 
     def get_extra_costs(self, obj):

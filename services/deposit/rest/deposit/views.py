@@ -69,6 +69,7 @@ class DepositViewSet(BaseViewSet):
         "order__customer__name",
         "order__convection_name",
         "invoice__invoice_no",
+        "pic",
     ]
     serializer_map = {
         "create": DepositCreateSerializer,

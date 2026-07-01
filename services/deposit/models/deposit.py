@@ -61,6 +61,8 @@ class Deposit(get_subid_model()):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     accepted_at = models.DateTimeField(blank=True, null=True)
+    
+    pic = models.CharField(max_length=200, blank=True, null=True)
 
     objects = DepositManager()
 
