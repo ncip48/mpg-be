@@ -114,6 +114,7 @@ class DepositCreateSerializer(BaseModelSerializer):
             "discounts",
             "accepted_at",
             "items",
+            "pic",
         )
 
     # --- 4. New Helper methods for create/update ---
