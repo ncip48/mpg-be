@@ -34,6 +34,7 @@ class Command(BaseCommand):
                 status="partial",
                 invoice_no=invoice_no,
                 issued_date=today,
+                order=deposit.order,
                 delivery_date=delivery_date,
                 is_deposit_invoice=True,
             )

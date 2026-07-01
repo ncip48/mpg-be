@@ -439,6 +439,9 @@ class InvoiceSummarySerializer(BaseModelSerializer):
         ]
 
     def get_total_extra_cost(self, obj):
+        if obj.is_deposit_invoice:
+            return 0
+        
         # Get total of extra costs related to this invoice's order
         order = obj.order if hasattr(obj, "order") else None
         if order and hasattr(order, "extra_costs"):
