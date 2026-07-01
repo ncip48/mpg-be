@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from services.forecast.models import Forecast
 from services.verification.models import QCFinishingDefect
 from services.order.models import Order
+from services.deposit.models import Deposit
 from services.ticket.models import ComplaintTicket
 
 
@@ -115,3 +116,23 @@ class ForecastEstimateReminderView(APIView):
             )
 
         return paginator.get_paginated_response(data)
+
+class TotalCustomerDepositView(APIView):
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
+
+    def get(self, request):
+        qs = Deposit.objects.all()
+        qs = apply_date_filter(qs, "created__date", request)
+
+        return Response({"count": qs.count()})
+    
+class TotalCustomerFixDepositView(APIView):
+    required_module_code = "dashboard"
+    permission_classes = [IsAuthenticated, HasModulePermission]
+
+    def get(self, request):
+        qs = Deposit.objects.all().filter(paid_off_at__isnull=False)
+        qs = apply_date_filter(qs, "paid_off_at__date", request)
+
+        return Response({"count": qs.count()})

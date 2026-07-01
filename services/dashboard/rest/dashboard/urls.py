@@ -6,6 +6,8 @@ from .views import (
     TotalDefectView,
     TotalOrderView,
     TotalComplaintView,
+    TotalCustomerDepositView,
+    TotalCustomerFixDepositView
 )
 
 urlpatterns = [
@@ -14,4 +16,6 @@ urlpatterns = [
     path("total-order/", TotalOrderView.as_view()),
     path("total-complaint/", TotalComplaintView.as_view()),
     path("forecast-reminder/", ForecastEstimateReminderView.as_view()),
+    path("total-customer-deposit/", TotalCustomerDepositView.as_view()),
+    path("total-fix-customer-deposit/", TotalCustomerFixDepositView.as_view()),
 ]
