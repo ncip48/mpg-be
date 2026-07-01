@@ -14,4 +14,9 @@ urlpatterns = [
         DepositViewSet.as_view({"get": "generate_invoice_pdf"}),
         name="invoice-pdf",
     ),
+    path(
+        "deposits/<str:subid>/invoice-deposit/",
+        DepositViewSet.as_view({"get": "generate_invoice_pdf"}),
+        name="invoice-deposit-pdf",
+    ),
 ]

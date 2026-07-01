@@ -220,6 +220,18 @@ class DepositCreateSerializer(BaseModelSerializer):
                 delivery_date=delivery_date,
                 # note=note,
             )
+            # Generate deposit invoice
+            invoice_deposit_no = f"DEPOSIT.{today.year}.{today.month:02d}.{deposit.pk:05d}"
+            Invoice.objects.create(
+                status="partial",
+                invoice_no=invoice_deposit_no,
+                # order=order,
+                deposit=deposit,
+                issued_date=today,
+                delivery_date=delivery_date,
+                is_deposit_invoice=True,
+                # note=note,
+            )
 
         return deposit
 
