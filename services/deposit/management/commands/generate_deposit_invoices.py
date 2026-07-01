@@ -31,12 +31,12 @@ class Command(BaseCommand):
 
             _, created = Invoice.objects.get_or_create(
                 deposit=deposit,
+                is_deposit_invoice=True,
                 defaults={
                     "status": "partial",
                     "invoice_no": invoice_no,
                     "issued_date": today,
                     "delivery_date": delivery_date,
-                    "is_deposit_invoice": True,
                 },
             )
 
