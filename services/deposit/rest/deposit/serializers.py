@@ -22,6 +22,7 @@ from services.order.rest.order.serializers import (
     OrderKonveksiListSerializer,
 )
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
+from services.queue_entry.models import QueueEntry
 
 if TYPE_CHECKING:
     pass
@@ -259,6 +260,22 @@ class DepositCreateSerializer(BaseModelSerializer):
                 instance.reminder_two = None
 
             instance.save()
+            
+            print(validated_data.get("accepted_at"))
+            
+            # -----------------------------
+            # Create / Update Queue Entry (TANDANYA DIA ACC FORM)
+            # -----------------------------
+            if validated_data.get("accepted_at"):
+                print("must hitted the queue entry crt")
+                QueueEntry.objects.update_or_create(
+                    deposit=instance,
+                    defaults={
+                        "forecast": getattr(instance, "forecast", None),
+                        "order": getattr(instance, "order", None),
+                        "created_by": self.context["request"].user,
+                    },
+                )
 
             # --- Refactored: Use helper methods ---
             # Update order items if provided
