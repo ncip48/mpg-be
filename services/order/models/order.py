@@ -44,7 +44,7 @@ def generate_order_id():
 
 class Order(get_subid_model()):
     identifier = models.CharField(
-        max_length=20, null=True, blank=True, default=generate_order_id
+        max_length=200, null=True, blank=True, default=generate_order_id
     )
     customer = models.ForeignKey(
         Customer,
