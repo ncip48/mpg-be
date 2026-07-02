@@ -5,6 +5,9 @@ from datetime import date
 
 from django.db.models import F, ExpressionWrapper, IntegerField
 
+from datetime import datetime, time
+
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,16 +21,33 @@ from services.ticket.models import ComplaintTicket
 
 
 def apply_date_filter(queryset, field_name, request):
+    """
+    Filter a DateTimeField by start_date and end_date query params.
+
+    Example:
+        ?start_date=2026-07-02&end_date=2026-07-02
+
+    Usage:
+        qs = apply_date_filter(qs, "accepted_at", request)
+    """
     start_date = request.query_params.get("start_date")
     end_date = request.query_params.get("end_date")
 
     filters = {}
 
     if start_date:
-        filters[f"{field_name}__gte"] = parse_date(start_date)
+        start = parse_date(start_date)
+        if start:
+            filters[f"{field_name}__gte"] = timezone.make_aware(
+                datetime.combine(start, time.min)
+            )
 
     if end_date:
-        filters[f"{field_name}__lte"] = parse_date(end_date)
+        end = parse_date(end_date)
+        if end:
+            filters[f"{field_name}__lt"] = timezone.make_aware(
+                datetime.combine(end, time.max)
+            )
 
     return queryset.filter(**filters)
 
@@ -49,7 +69,7 @@ class TotalDefectView(APIView):
 
     def get(self, request):
         qs = QCFinishingDefect.objects.all()
-        qs = apply_date_filter(qs, "created__date", request)
+        qs = apply_date_filter(qs, "created", request)
 
         return Response({"count": qs.count()})
 
@@ -60,7 +80,7 @@ class TotalOrderView(APIView):
 
     def get(self, request):
         qs = Order.objects.all()
-        qs = apply_date_filter(qs, "created__date", request)
+        qs = apply_date_filter(qs, "created", request)
 
         return Response({"count": qs.count()})
 
@@ -123,7 +143,8 @@ class TotalCustomerDepositView(APIView):
 
     def get(self, request):
         qs = Deposit.objects.all()
-        qs = apply_date_filter(qs, "created__date", request)
+
+        qs = apply_date_filter(qs, "accepted_at", request)
 
         return Response({"count": qs.count()})
     
@@ -133,6 +154,6 @@ class TotalCustomerFixDepositView(APIView):
 
     def get(self, request):
         qs = Deposit.objects.all().filter(paid_off_at__isnull=False)
-        qs = apply_date_filter(qs, "paid_off_at__date", request)
+        qs = apply_date_filter(qs, "paid_off_at", request)
 
         return Response({"count": qs.count()})
