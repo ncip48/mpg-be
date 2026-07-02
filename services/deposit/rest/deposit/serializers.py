@@ -484,7 +484,8 @@ class DepositDetailSerializer(
     FloatToIntRepresentationMixin, NullInvoiceIfEmptyItemsMixin, BaseModelSerializer
 ):
     # customer = CustomerSerializer(read_only=True)
-    invoice = InvoiceSummarySerializer(read_only=True)
+    invoice = serializers.SerializerMethodField()
+    invoice_deposit = serializers.SerializerMethodField()
     items = OrderItemListSerializer(many=True, read_only=True)
     extra_costs = serializers.SerializerMethodField()
     discounts = serializers.SerializerMethodField()
@@ -505,6 +506,7 @@ class DepositDetailSerializer(
             "created",
             "items",
             "invoice",
+            "invoice_deposit",
             "extra_costs",
             "discounts",
             # CS 2
@@ -527,3 +529,11 @@ class DepositDetailSerializer(
     def get_discounts(self, obj):
         qs = obj.extra_costs.filter(type="discount")
         return OrderExtraCostSerializer(qs, many=True).data
+    
+    def get_invoice(self, obj):
+        invoice = obj.invoice.filter(is_deposit_invoice=False).first()
+        return InvoiceSummarySerializer(invoice, context=self.context).data if invoice else None
+
+    def get_invoice_deposit(self, obj):
+        invoice = obj.invoice.filter(is_deposit_invoice=True).first()
+        return InvoiceSummarySerializer(invoice, context=self.context).data if invoice else None
