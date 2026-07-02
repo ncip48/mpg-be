@@ -267,13 +267,22 @@ class DepositCreateSerializer(BaseModelSerializer):
             self._update_extra_costs(instance, extra_costs_data, discounts_data)
             # --- End Refactored ---
 
-            # Update invoice if exists
-            invoice = getattr(instance, "invoice", None)
+            # # Update invoice if exists
+            # invoice = getattr(instance, "invoice", None)
+            # if invoice:
+            #     if delivery_date:
+            #         invoice.delivery_date = delivery_date
+            #     # if note:
+            #     #     invoice.note = note
+            #     invoice.save()
+            
+            invoice = instance.invoice.filter(
+                is_deposit_invoice=False
+            ).first()
+
             if invoice:
                 if delivery_date:
                     invoice.delivery_date = delivery_date
-                # if note:
-                #     invoice.note = note
                 invoice.save()
 
         return instance
