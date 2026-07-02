@@ -24,6 +24,7 @@ from services.printer.models.printer import Printer
 from services.printer.rest.printer.serializers import PrinterSerializer
 from services.product.models.fabric_type import FabricType
 from services.product.rest.fabric_type.serializers import FabricTypeSerializerSimple
+from services.queue_entry.models import QueueEntry
 
 if TYPE_CHECKING:
     pass
@@ -430,7 +431,7 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         return data
         return data
 
-    def create(self, validated_data):
+    def create(self, instance, validated_data):
         details_data = validated_data.pop("details", None)
 
         # fallback when DRF wipes nested data
@@ -445,6 +446,14 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
         validated_data["created_by"] = self.context["request"].user
 
         order_form = super().create(validated_data)
+        
+        QueueEntry.objects.update_or_create(
+            order=instance.order,
+            defaults={
+                "forecast": None,
+                "created_by": self.context["request"].user,
+            },
+        )
 
         # Create OrderFormDetail rows
         for detail in details_data:
@@ -468,6 +477,14 @@ class OrderFormMarketplaceSerializer(BaseModelSerializer):
 
         # Update the main OrderForm fields (team_name, etc.)
         instance = super().update(instance, validated_data)
+        
+        QueueEntry.objects.update_or_create(
+            order=instance.order,
+            defaults={
+                "forecast": None,
+                "created_by": self.context["request"].user,
+            },
+        )
 
         # --- ADD THIS LOGIC ---
         # If 'details' was part of the request, update the nested items.

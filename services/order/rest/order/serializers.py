@@ -343,14 +343,14 @@ class OrderCreateSerializer(BaseModelSerializer):
                 setattr(instance, attr, value)
             instance.save()
             
-            if instance.order_type == "marketplace":
-                QueueEntry.objects.update_or_create(
-                    order=instance.order,
-                    defaults={
-                        "forecast": None,
-                        "created_by": self.context["request"].user,
-                    },
-                )
+            # if instance.order_type == "marketplace":
+            #     QueueEntry.objects.update_or_create(
+            #         order=instance.order,
+            #         defaults={
+            #             "forecast": None,
+            #             "created_by": self.context["request"].user,
+            #         },
+            #     )
 
             # --- Refactored: Use helper methods ---
             # Update order items if provided
