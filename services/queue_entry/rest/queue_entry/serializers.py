@@ -23,7 +23,6 @@ class QueueEntrySerializer(BaseModelSerializer):
         model = QueueEntry
         fields = [
             "pk",
-            "subid",
             "deposit",
             "forecast",
             "ticket_number",
@@ -33,7 +32,6 @@ class QueueEntrySerializer(BaseModelSerializer):
         ]
         read_only_fields = [
             "pk",
-            "subid",
             "ticket_number",
             "created_by",
             "created",
