@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from core.common.serializers import BaseModelSerializer
-from services.queue.models import QueueEntry
+from services.queue_entry.models import QueueEntry
 
 if TYPE_CHECKING:
     pass
