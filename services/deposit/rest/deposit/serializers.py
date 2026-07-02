@@ -263,19 +263,19 @@ class DepositCreateSerializer(BaseModelSerializer):
             
             print(validated_data.get("accepted_at"))
             
-            # -----------------------------
-            # Create / Update Queue Entry (TANDANYA DIA ACC FORM)
-            # -----------------------------
+            order_items = instance.items.all()
+
             if validated_data.get("accepted_at"):
-                print("must hitted the queue entry crt")
-                QueueEntry.objects.update_or_create(
-                    deposit=instance,
-                    defaults={
-                        "forecast": getattr(instance, "forecast", None),
-                        "order": getattr(instance, "order", None),
-                        "created_by": self.context["request"].user,
-                    },
-                )
+                for item in order_items:
+                    QueueEntry.objects.update_or_create(
+                        deposit=instance,
+                        order_item=item,
+                        defaults={
+                            "order": None,
+                            "forecast": None,
+                            "created_by": self.context["request"].user,
+                        },
+                    )
 
             # --- Refactored: Use helper methods ---
             # Update order items if provided

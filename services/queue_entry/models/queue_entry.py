@@ -41,6 +41,16 @@ class QueueEntry(get_subid_model()):
         Deposit,
         on_delete=models.CASCADE,
         related_name="queue_entries",
+        null=True,
+        blank=True,
+    )
+    
+    order_item = models.ForeignKey(
+        "order.OrderItem",
+        on_delete=models.CASCADE,
+        related_name="queue_entries",
+        null=True,
+        blank=True,
     )
     
     order = models.ForeignKey(

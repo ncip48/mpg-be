@@ -16,6 +16,7 @@ from services.order.models.invoice import Invoice
 from services.order.models.order_extra_cost import OrderExtraCost
 from services.order.rest.order.utils import get_dynamic_item_price, get_qty_value
 from services.product.models import FabricType, Product, ProductVariantType
+from services.queue_entry.models import QueueEntry
 
 if TYPE_CHECKING:
     pass
@@ -283,6 +284,14 @@ class OrderCreateSerializer(BaseModelSerializer):
                     **validated_data,
                 )
                 # Note: Marketplace orders (in this logic) don't get items/costs/invoice on create
+                # TODO: Add queue entry
+                QueueEntry.objects.update_or_create(
+                    order=order,
+                    defaults={
+                        "forecast": None,
+                        "created_by": self.context["request"].user,
+                    },
+                )
             else:
                 # Normal konveksi order
                 customer = validated_data.pop("customer")
@@ -333,6 +342,15 @@ class OrderCreateSerializer(BaseModelSerializer):
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
             instance.save()
+            
+            if instance.order_type == "marketplace":
+                QueueEntry.objects.update_or_create(
+                    order=instance.order,
+                    defaults={
+                        "forecast": None,
+                        "created_by": self.context["request"].user,
+                    },
+                )
 
             # --- Refactored: Use helper methods ---
             # Update order items if provided

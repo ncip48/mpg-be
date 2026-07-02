@@ -25,6 +25,8 @@ class QueueEntrySerializer(BaseModelSerializer):
             "pk",
             "deposit",
             "forecast",
+            "order",
+            "order_item",
             "ticket_number",
             "created_by",
             "created",
