@@ -144,7 +144,7 @@ class TotalCustomerDepositView(APIView):
     def get(self, request):
         qs = Deposit.objects.all()
 
-        qs = apply_date_filter(qs, "accepted_at", request)
+        qs = apply_date_filter(qs, "created", request)
 
         return Response({"count": qs.count()})
     
