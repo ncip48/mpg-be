@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.response import Response
+from core.common.filter_date import apply_date_filter
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
@@ -47,6 +48,34 @@ class QCLineVerificationViewSet(BaseViewSet):
         "create": ["verification.verify_line"],
         "update": ["verification.verify_line"],
     }
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = apply_date_filter(queryset, "date_forecast", self.request)
+
+        # 🚀 PREVENT N+1: Fetch all related foreign keys in one go
+        queryset = queryset.select_related(
+            "order",
+            "order__customer",
+            "order_item",
+            "order_item__order",
+            "order_item__order__customer",
+            "order_item__product",
+            "order_item__product__printer",
+            "order_item__fabric_type",
+            "order_item__deposit",
+        )
+
+        # 🚀 PREVENT N+1: Fetch reverse relations (like StockItem and OrderForm)
+        # Note: Change "stock_items" and "order_forms" if you defined custom related_names on those models.
+        queryset = queryset.prefetch_related(
+            "stock_items__product__printer",
+            "stock_items__fabric_type",
+            "order__order_forms", 
+            "order__order_forms__printer", # <-- ADD THIS LINE
+        )
+
+        return queryset
 
     def get_required_perms(self):
         return self.permission_map.get(self.action, [])
