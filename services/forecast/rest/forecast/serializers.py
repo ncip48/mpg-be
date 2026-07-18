@@ -208,21 +208,36 @@ class ForecastSerializer(BaseModelSerializer):
         data["priority_status"] = self.priority_status(instance)
         data["estimate_sent"] = self.estimate_sent(instance)
         return data
+    
+    # 💡 HELPER METHOD: Fetch the stock item once without hitting the DB
+    def _get_stock_item(self, obj):
+        # Uses the prefetch_related cache. Change 'stock_items' if related_name is different.
+        stock_items = obj.stock_items.all()
+        return stock_items[0] if stock_items else None
+
+    def _get_order_form(self, obj):
+        if not obj.order:
+            return None
+        order_forms = obj.order.order_forms.all()
+        return order_forms[0] if order_forms else None
 
     def printer_display(self, obj):
+        printer = None
+
         if obj.is_stock:
-            printer = Printer.objects.filter(
-                pk=StockItem.objects.filter(forecast=obj).first().product.printer.id
-            ).first()
+            stock_item = self._get_stock_item(obj)
+            if stock_item and stock_item.product:
+                printer = stock_item.product.printer
         else:
             if obj.order_item:
-                printer = Printer.objects.filter(
-                    pk=obj.order_item.product.printer.id
-                ).first()
+                if obj.order_item.product:
+                    printer = obj.order_item.product.printer
             else:
-                printer = Printer.objects.filter(
-                    pk=OrderForm.objects.filter(order=obj.order).first().printer_id
-                ).first()
+                order_form = self._get_order_form(obj)
+                # Ensure you are accessing the actual object, not the ID, to use the cache
+                if order_form:
+                    # Assuming the foreign key on OrderForm is named 'printer'
+                    printer = order_form.printer 
 
         if not printer:
             return None
@@ -241,60 +256,43 @@ class ForecastSerializer(BaseModelSerializer):
         return order.convection_name if order else None
 
     def get_customer(self, obj):
-        if obj.order_item:
-            customer = Customer.objects.filter(
-                pk=obj.order_item.order.customer.id
-            ).first()
-        else:
-            customer = None
-
-        return CustomerSerializerSimple(customer).data if customer else None
-
-    def get_product_name(self, obj):
-        if obj.is_stock:
-            # print(obj.stock_items)
-            stock_item = StockItem.objects.filter(forecast=obj).first()
-            product = stock_item.product.name if stock_item else None
-        else:
-            if obj.order_item:
-                product = Product.objects.filter(pk=obj.order_item.product.id).first()
-                product = product.name if product else None
-            else:
-                product = OrderForm.objects.filter(order=obj.order).first()
-                date = (
-                    format_tanggal_indonesia(product.email_send_date)
-                    if product.email_send_date
-                    else "-"
-                )
-                product = f"{product.marketplace} {date} Sesi {product.session}"
-
-        return product
+        if obj.order_item and obj.order_item.order:
+            customer = obj.order_item.order.customer
+            return CustomerSerializerSimple(customer).data if customer else None
+        
+        return None
 
     def sku(self, obj):
         if obj.is_stock:
-            stock_item = StockItem.objects.filter(forecast=obj).first()
-            sku = stock_item.product.sku if stock_item else None
-        else:
-            sku = "Custom"
-        return sku
+            stock_item = self._get_stock_item(obj)
+            return stock_item.product.sku if stock_item and stock_item.product else None
+        return "Custom"
+
+    def get_product_name(self, obj):
+        if obj.is_stock:
+            stock_item = self._get_stock_item(obj)
+            return stock_item.product.name if stock_item and stock_item.product else None
+        
+        if obj.order_item:
+            # No query triggered if order_item__product is in select_related
+            return obj.order_item.product.name if obj.order_item.product else None
+            
+        product = self._get_order_form(obj)
+        if product:
+            date = format_tanggal_indonesia(product.email_send_date) if product.email_send_date else "-"
+            return f"{product.marketplace} {date} Sesi {product.session}"
+        return None
 
     def get_fabric_name(self, obj):
         if obj.is_stock:
-            # print(obj.stock_items)
-            stock_item = StockItem.objects.filter(forecast=obj).first()
-            fabric = stock_item.fabric_type.name if stock_item else None
-        else:
-            if obj.order_item:
-                fabric = (
-                    obj.order_item.fabric_type.name
-                    if obj.order_item.fabric_type
-                    else None
-                )
-            else:
-                product = OrderForm.objects.filter(order=obj.order).first()
-                fabric = product.fabric_type.name if product else None
-
-        return fabric
+            stock_item = self._get_stock_item(obj)
+            return stock_item.fabric_type.name if stock_item and stock_item.fabric_type else None
+            
+        if obj.order_item:
+            return obj.order_item.fabric_type.name if obj.order_item.fabric_type else None
+            
+        product = self._get_order_form(obj)
+        return product.fabric_type.name if product and product.fabric_type else None
 
     def priority_status(self, obj):
         if obj.is_stock:
