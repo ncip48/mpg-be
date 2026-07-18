@@ -126,7 +126,7 @@ class ForecastViewSet(BaseViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = apply_date_filter(queryset, "date_forecast", self.request)
+        queryset = apply_date_filter(queryset, "date", self.request)
 
         # 🚀 PREVENT N+1: Fetch all related foreign keys in one go
         queryset = queryset.select_related(
