@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 import logging
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,7 @@ from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
 from services.warehouse.models import WarehouseDelivery
 from services.warehouse.models.warehouse_receipt import WarehouseReceipt
+from services.warehouse.rest.warehouse_delivery.utils import generate_production_code
 
 if TYPE_CHECKING:
     pass
@@ -70,6 +72,10 @@ class BaseWarehouseDeliverySerializer(BaseModelSerializer):
 
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
+
+        production_date = validated_data.get("production_date", date.today())
+        validated_data["production_code"] = generate_production_code(production_date)
+
         return WarehouseDelivery.objects.create(
             forecast=forecast,
             **validated_data,
