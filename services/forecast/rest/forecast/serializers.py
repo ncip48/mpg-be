@@ -299,7 +299,8 @@ class ForecastSerializer(BaseModelSerializer):
         else:
             order_form = self._get_order_form(obj)
             if order_form:
-                image = order_form.image
+                # image = order_form.image
+                image = None
 
         if image and image.name:
             request = self.context.get("request")

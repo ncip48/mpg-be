@@ -42,6 +42,7 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
             "defect_area",
             "defect_note",
             "defect_image",
+            "error_from",
             "created",
             "updated",
         )
