@@ -36,6 +36,10 @@ class QueueEntryViewSet(BaseViewSet):
             "created_by",
             "deposit__order",
             "deposit__order__customer",
+            # 🚀 PREVENT N+1: Add the fields your serializer traverses
+            "order",
+            "order_item",
+            "order_item__deposit",
         )
         .order_by("-created")
     )

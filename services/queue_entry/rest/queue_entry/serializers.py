@@ -9,6 +9,9 @@ from services.account.rest.user.serializers import UserSerializerSimple
 from services.deposit.rest.deposit.serializers import DepositDetailSerializer, DepositListSerializer
 from services.queue_entry.models import QueueEntry
 
+import datetime
+import holidays
+
 if TYPE_CHECKING:
     pass
 
@@ -53,30 +56,63 @@ class QueueEntrySerializer(BaseModelSerializer):
         
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["created_by"] = UserSerializerSimple(instance.created_by).data
+        
+        # 🚀 FAST: Build the dictionary directly instead of calling a DRF Serializer
+        if instance.created_by:
+            data["created_by"] = {
+                "pk": instance.created_by.subid,
+                # Add any other fields UserSerializerSimple usually returns, e.g.:
+                "first_name": instance.created_by.first_name,
+                "last_name": instance.created_by.first_name,
+                "email": instance.created_by.email,
+            }
+        else:
+            data["created_by"] = None
+            
         return data
-    
-    def _get_stock_item(self, obj):
-        # Uses the prefetch_related cache. Change 'stock_items' if related_name is different.
-        stock_items = obj.stock_items.all()
-        return stock_items[0] if stock_items else None
     
     def get_type(self, obj):
         return "Konveksi" if obj.deposit else "Marketplace"
     
     def get_priority_status(self, obj):
-        if obj.order_item:
-            ps = obj.order_item.deposit.priority_status.upper()
-        else:
-            ps = obj.order.priority_status.upper()
+        ps = None
+        if obj.order_item and obj.order_item.deposit:
+            ps = obj.order_item.deposit.priority_status
+        elif obj.order:
+            ps = obj.order.priority_status
 
-        return ps
+        return ps.upper() if ps else None
 
     def get_estimate_sent(self, obj):
-        if obj.order_item:
-            deposit = DepositListSerializer(obj.order_item.deposit)
-            es = deposit.data["estimate_sent"]
-        else:
-            es = obj.order.estimated_shipping_date
+        if obj.order_item and obj.order_item.deposit:
+            deposit = obj.order_item.deposit
+            accepted_at = getattr(deposit, "accepted_at", None)
+            lead_time = getattr(deposit, "lead_time", 0)
 
-        return es
+            if accepted_at and lead_time:
+                # Use Indonesian public holidays
+                id_holidays = holidays.country_holidays("ID", years=accepted_at.year)
+
+                current_date = accepted_at
+                days_added = 0
+
+                while days_added < lead_time:
+                    current_date += datetime.timedelta(days=1)
+
+                    # Skip weekends (Saturday=5, Sunday=6)
+                    if current_date.weekday() >= 5:
+                        continue
+
+                    # Skip Indonesian holidays
+                    if current_date in id_holidays:
+                        continue
+
+                    days_added += 1
+
+                return current_date.strftime("%Y-%m-%d")
+        
+        # Fallback to the order's estimated date
+        if obj.order:
+            return obj.order.estimated_shipping_date
+            
+        return None
