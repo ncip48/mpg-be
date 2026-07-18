@@ -42,3 +42,17 @@ def apply_sewer_distribution_date_filter(queryset, field_name, request):
         filters[f"{field_name}__lte"] = parse_date(end_date)
 
     return queryset.filter(**filters)
+
+def apply_estimate_sent_date_filter(queryset, field_name, request):
+    start_date = request.query_params.get("estimate_sent_start_date")
+    end_date = request.query_params.get("estimate_sent_end_date")
+
+    filters = {}
+
+    if start_date:
+        filters[f"{field_name}__gte"] = parse_date(start_date)
+
+    if end_date:
+        filters[f"{field_name}__lte"] = parse_date(end_date)
+
+    return queryset.filter(**filters)
