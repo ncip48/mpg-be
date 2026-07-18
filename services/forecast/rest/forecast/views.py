@@ -6,11 +6,11 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext_lazy as _
-from django.utils.dateparse import parse_date
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
+from core.common.filter_date import apply_date_filter
 
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -34,20 +34,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 __all__ = ("ForecastViewSet",)
-
-def apply_date_filter(queryset, field_name, request):
-    start_date = request.query_params.get("start_date")
-    end_date = request.query_params.get("end_date")
-
-    filters = {}
-
-    if start_date:
-        filters[f"{field_name}__gte"] = parse_date(start_date)
-
-    if end_date:
-        filters[f"{field_name}__lte"] = parse_date(end_date)
-
-    return queryset.filter(**filters)
 
 class ForecastViewSet(BaseViewSet):
     required_module_code = "forecasting"
