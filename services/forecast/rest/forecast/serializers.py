@@ -351,6 +351,7 @@ class ForecastSerializer(BaseModelSerializer):
     
         steps = [
             ("print_verifications", "Menunggu Verifikasi Print"),
+            ("qc_press_verifications", "Menunggu QC Press"),
             ("qc_line_verifications", "Menunggu QC Line"),
             ("qc_cutting_verifications", "Menunggu QC Cutting"),
             (("qc_finishings", "qc_finishing_defects"), "Menunggu QC Finishing"),
