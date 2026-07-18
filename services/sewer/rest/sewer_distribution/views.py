@@ -13,13 +13,26 @@ from core.common.filter_date import apply_forecast_date_filter, apply_sewer_dist
 
 from core.common.viewsets import BaseViewSet
 from services.forecast.models.forecast import Forecast
+from services.forecast.models.stock_item import StockItem
 from services.forecast.rest.forecast.filtersets import ForecastFilterSet
+from services.order.models.order_form import OrderForm
 from services.sewer.models.sewer_distribution import SewerDistribution
 from services.sewer.rest.sewer_distribution.filtersets import SewerDistributionFilterSet
 from services.sewer.rest.sewer_distribution.serializers import (
     BaseSewerDistributionSerializer,
     SewerDistributionSerializer,
 )
+
+from django.db.models import (
+    Case,
+    When,
+    F,
+    Value,
+    CharField,
+    OuterRef,
+    Subquery,
+)
+from django.db.models.functions import Concat
 
 if TYPE_CHECKING:
     pass
@@ -36,6 +49,14 @@ class SewerDistributionViewSet(BaseViewSet):
     """
 
     required_module_code = "pembagian-penjahit"
+    
+    stock_product = StockItem.objects.filter(
+        forecast=OuterRef("pk")
+    ).values("product__name")[:1]
+
+    order_form = OrderForm.objects.filter(
+        order=OuterRef("order")
+    )
 
     my_tags = ["Sewer Distribution"]
     queryset = (
@@ -43,6 +64,32 @@ class SewerDistributionViewSet(BaseViewSet):
             "sewer_distributions", "qc_finishings", "qc_finishing_defects"
         )
         .filter(sewer_distributions__isnull=False)
+        .annotate(
+            convection_name=Case(
+                When(is_stock=True, then=Value("STOK JB")),
+                default=F("order_item__order__convection_name"),
+                output_field=CharField(),
+            ),
+            product_name=Case(
+                When(
+                    is_stock=True,
+                    then=Subquery(stock_product),
+                ),
+                When(
+                    order_item__isnull=False,
+                    then=F("order_item__product__name"),
+                ),
+                default=Concat(
+                    Subquery(order_form.values("marketplace")[:1]),
+                    Value(" "),
+                    # email_send_date formatting here is the problem
+                    Value("Sesi "),
+                    Subquery(order_form.values("session")[:1]),
+                    output_field=CharField(),
+                ),
+                output_field=CharField(),
+            ),
+        )
         .distinct()
     )
     serializer_class = SewerDistributionSerializer
@@ -55,6 +102,8 @@ class SewerDistributionViewSet(BaseViewSet):
         "sewer_distributions__distributed_by__first_name",
         "sewer_distributions__sewer__name",
         "sewer_distributions__tracking_code",
+        "convection_name",
+        "product_name",
     ]
 
     permission_map = {
