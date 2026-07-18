@@ -43,12 +43,14 @@ class BaseWarehouseDeliverySerializer(BaseModelSerializer):
             "defect_count",
             "detail",
             "her",
+            "production_code",
             "created",
             "updated",
         )
         read_only_fields = (
             "created",
             "updated",
+            "production_code",
         )
 
     def to_representation(self, instance):

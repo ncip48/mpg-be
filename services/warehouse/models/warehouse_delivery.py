@@ -63,6 +63,8 @@ class WarehouseDelivery(get_subid_model()):
         null=True,
         help_text="Keterangan / alasan barang yang dikirim defect",
     )
+    
+    production_code = models.CharField(max_length=100, null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
