@@ -60,6 +60,8 @@ class QCFinishingDefect(get_subid_model()):
         default=False,
         help_text="Centang jika penjahit sudah memperbaiki dan mengembalikan lagi",
     )
+    
+    error_from = models.CharField(max_length=100 ,null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

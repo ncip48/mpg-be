@@ -43,6 +43,7 @@ class BaseQCFinishingDefectSerializer(BaseModelSerializer):
             "quantity_rejected",
             "reason",
             "is_repaired",
+            "error_from",
             "created",
             "updated",
         )

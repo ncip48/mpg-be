@@ -39,6 +39,7 @@ class BaseQCFinishingSerializer(BaseModelSerializer):
             "realization_status",
             "verification_code",
             "notes",
+            "error_from",
             "created",
             "updated",
         )
