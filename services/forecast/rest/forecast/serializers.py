@@ -147,6 +147,7 @@ class ForecastSerializer(BaseModelSerializer):
     # )
     stock_item = StockItemInputSerializer(write_only=True, required=False)
     product_name = serializers.SerializerMethodField()
+    product_image = serializers.SerializerMethodField()
     fabric_name = serializers.SerializerMethodField()
     # priority_status = serializers.SerializerMethodField()
     # estimate_sent = serializers.SerializerMethodField()
@@ -170,6 +171,7 @@ class ForecastSerializer(BaseModelSerializer):
             "convection_name",
             "stock_item",
             "product_name",
+            "product_image",
             "fabric_name",
             "priority_status",
             "estimate_sent",
@@ -281,6 +283,30 @@ class ForecastSerializer(BaseModelSerializer):
         if product:
             date = format_tanggal_indonesia(product.email_send_date) if product.email_send_date else "-"
             return f"{product.marketplace} {date} Sesi {product.session}"
+        return None
+    
+    def get_product_image(self, obj):
+        image = None
+
+        if obj.is_stock:
+            stock_item = self._get_stock_item(obj)
+            if stock_item and stock_item.product:
+                image = stock_item.product.image
+
+        elif obj.order_item_id:
+            image = obj.order_item.product.image
+
+        else:
+            order_form = self._get_order_form(obj)
+            if order_form:
+                image = order_form.image
+
+        if image and image.name:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(image.url)
+            return image.url
+
         return None
 
     def get_fabric_name(self, obj):
