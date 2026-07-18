@@ -100,6 +100,8 @@ class QCCuttingVerification(get_subid_model()):
         null=True,
         help_text="Upload foto bukti reject",
     )
+    
+    error_from = models.CharField(max_length=100 ,null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
