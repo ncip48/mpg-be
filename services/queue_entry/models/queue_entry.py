@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import logging
 import secrets
 import string
@@ -10,6 +11,7 @@ from django.db import models
 from core.common.models import get_subid_model
 from services.deposit.models import Deposit
 from services.forecast.models import Forecast
+from services.order.models.order_form_detail import OrderFormDetail
 
 if TYPE_CHECKING:
     pass
@@ -115,3 +117,48 @@ class QueueEntry(get_subid_model()):
             self.ticket_number = self.generate_ticket_number()
 
         super().save(*args, **kwargs)
+        
+    @property
+    def details(self) -> list[dict]:
+        """
+        Normalize and group sizes for both stock and non-stock items:
+        - "L MEN"   → "L"
+        - "S WOMEN" → "S"
+        - "L KIDS"  → "KIDS"
+        - "XS GIRL" → "GIRL"
+        """
+        from services.forecast.models import StockItemSize
+        from services.order.models import OrderForm
+
+        def normalize_type(size_text: str) -> str:
+            if not size_text:
+                return ""
+
+            size_upper = size_text.upper().split()
+
+            # Priority groups
+            for keyword in ("KIDS", "GIRL"):
+                if keyword in size_upper:
+                    return keyword
+
+            # Default to first token (XS, S, M, L, XL, etc.)
+            return size_upper[0]
+        
+        # -------------------------------
+        # CASE 2: NORMAL ORDER
+        # -------------------------------
+        if self.order_item:
+            order_form = OrderForm.objects.filter(order_item=self.order_item).first()
+        else:
+            order_form = OrderForm.objects.filter(order=self.order).first()
+
+        if not order_form:
+            return []
+
+        details = OrderFormDetail.objects.filter(order_form=order_form)
+
+        normalized = (normalize_type(d.shirt_size) for d in details if d.shirt_size)
+
+        counter = Counter(normalized)
+
+        return [{"type": size, "count": count} for size, count in counter.items()]
