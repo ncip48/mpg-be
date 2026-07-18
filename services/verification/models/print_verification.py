@@ -69,6 +69,8 @@ class PrintVerification(get_subid_model()):
     finished_at = models.DateTimeField(
         null=True, blank=True, help_text="Waktu print selesai dikerjakan"
     )
+    
+    error_from = models.CharField(max_length=100 ,null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

@@ -35,6 +35,7 @@ class BasePrintVerificationSerializer(BaseModelSerializer):
             "forecast",
             "verified_by",
             "verified_at",
+            "error_from",
             "is_approved",
             "rejected_quantity",
             "rejection_note",
