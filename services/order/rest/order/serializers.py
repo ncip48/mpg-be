@@ -285,13 +285,13 @@ class OrderCreateSerializer(BaseModelSerializer):
                 )
                 # Note: Marketplace orders (in this logic) don't get items/costs/invoice on create
                 # TODO: Add queue entry
-                QueueEntry.objects.update_or_create(
-                    order=order,
-                    defaults={
-                        "forecast": None,
-                        "created_by": self.context["request"].user,
-                    },
-                )
+                # QueueEntry.objects.update_or_create(
+                #     order=order,
+                #     defaults={
+                #         "forecast": None,
+                #         "created_by": self.context["request"].user,
+                #     },
+                # )
             else:
                 # Normal konveksi order
                 customer = validated_data.pop("customer")
@@ -302,6 +302,14 @@ class OrderCreateSerializer(BaseModelSerializer):
                     customer=customer,
                     created_by=self.context["request"].user,
                     **validated_data,
+                )
+                
+                QueueEntry.objects.update_or_create(
+                    order=order,
+                    defaults={
+                        "forecast": None,
+                        "created_by": self.context["request"].user,
+                    },
                 )
 
                 # --- Refactored: Use helper methods ---
