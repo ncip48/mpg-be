@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from core.common.serializers import BaseModelSerializer
 from services.defect.models import Reject
+from services.order.rest.order.serializers import FloatToIntRepresentationMixin
 
 if TYPE_CHECKING:
     pass
@@ -16,10 +17,11 @@ logger = logging.getLogger(__name__)
 __all__ = ("RejectSerializer",)
 
 
-class RejectSerializer(BaseModelSerializer):
+class RejectSerializer(FloatToIntRepresentationMixin, BaseModelSerializer):
     """
     Serializer for Reject management.
     """
+    float_to_int_fields = ["hpp"]
 
     source_type = serializers.SerializerMethodField()
 
