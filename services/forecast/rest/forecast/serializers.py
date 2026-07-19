@@ -24,6 +24,7 @@ from services.printer.rest.printer.serializers import PrinterSerializer
 from services.product.models.fabric_type import FabricType
 from services.product.models.product import Product
 from services.product.models.variant_type import ProductVariantType
+from services.queue_entry.models.queue_entry import QueueEntry
 
 if TYPE_CHECKING:
     pass
@@ -413,5 +414,17 @@ class ForecastSerializer(BaseModelSerializer):
                         for size_obj in sizes_data
                     ]
                 )
+                
+        # TODO: update into queue entry logic
+        queue = None
 
+        if forecast.order_id:
+            queue = QueueEntry.objects.filter(order=forecast.order).first()
+        elif forecast.order_item_id:
+            queue = QueueEntry.objects.filter(order_item=forecast.order_item).first()
+
+        if queue:
+            queue.forecast = forecast
+            queue.save(update_fields=["forecast"])
+                       
         return forecast
