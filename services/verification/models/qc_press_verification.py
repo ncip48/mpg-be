@@ -119,4 +119,4 @@ class QCPressVerification(get_subid_model()):
 
     def __str__(self):
         status = "PASS" if self.is_approved else "REJECT"
-        return f"QC Press {self.forecast.id} - {status}"
+        return f"QC Press for forecast {self.forecast.id}: {status}"
