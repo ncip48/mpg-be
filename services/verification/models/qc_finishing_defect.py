@@ -77,4 +77,4 @@ class QCFinishingDefect(get_subid_model()):
         verbose_name_plural = "QC Finishing Defect Verifications"
 
     def __str__(self):
-        return f"Verification for {self.forecast.id} - {self.checked_by} => {self.quantity_rejected}"
+        return f"QC Finishing for forecast {self.forecast.id}: REJECT"

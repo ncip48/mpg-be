@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
-from services.defect.rest.reject.utils import sync_reject
+from services.defect.rest.reject.utils import sync_reject_manual
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
 from services.sewer.models.sewer import Sewer
@@ -71,7 +71,7 @@ class BaseQCFinishingDefectSerializer(BaseModelSerializer):
             **validated_data,
         )
         
-        sync_reject(
+        sync_reject_manual(
             verification=verification,
             qty=verification.quantity_rejected,
             note=verification.reason,
@@ -83,7 +83,7 @@ class BaseQCFinishingDefectSerializer(BaseModelSerializer):
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
 
-        sync_reject(
+        sync_reject_manual(
             verification=instance,
             qty=instance.quantity_rejected,
             note=instance.reason,

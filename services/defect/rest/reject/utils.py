@@ -18,3 +18,18 @@ def sync_reject(verification, qty, note, user):
     if created:
         reject.created_by = user
         reject.save(update_fields=["created_by"])
+        
+        
+def sync_reject_manual(verification, qty, note, user):
+    reject, created = Reject.objects.update_or_create(
+        content_type=ContentType.objects.get_for_model(verification),
+        object_id=verification.pk,
+        defaults={
+            "qty": qty,
+            "defect": note or "",
+        },
+    )
+
+    if created:
+        reject.created_by = user
+        reject.save(update_fields=["created_by"])
