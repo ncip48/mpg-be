@@ -87,4 +87,4 @@ class PrintVerification(get_subid_model()):
         verbose_name_plural = "Print Verifications"
 
     def __str__(self):
-        return f"Verification for {self.forecast.id} - {self.is_approved}"
+        return f"Verification for forecast {self.forecast.id}: {"approved" if self.is_approved else "reject/defect"}"

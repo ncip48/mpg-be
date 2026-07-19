@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
+from services.defect.rest.reject.utils import sync_reject
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
 from services.verification.models.print_verification import PrintVerification
@@ -51,7 +52,32 @@ class BasePrintVerificationSerializer(BaseModelSerializer):
 
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
-        return PrintVerification.objects.create(forecast=forecast, **validated_data)
+
+        verification = PrintVerification.objects.create(
+            forecast=forecast,
+            **validated_data,
+        )
+
+        sync_reject(
+            verification=verification,
+            qty=verification.rejected_quantity,
+            note=verification.rejection_note,
+            user=self.context["request"].user,
+        )
+
+        return verification
+    
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+
+        sync_reject(
+            verification=instance,
+            qty=instance.rejected_quantity,
+            note=instance.rejection_note,
+            user=self.context["request"].user,
+        )
+
+        return instance
 
 
 class PrintVerificationSerializer(ForecastSerializer):

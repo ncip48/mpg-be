@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "services.ticket",
     "services.dashboard",
     "services.queue_entry",
+    "services.defect",
 ]
 
 MIDDLEWARE = [
