@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from core.common.serializers import BaseModelSerializer
 from services.account.rest.user.serializers import UserSerializerSimple
+from services.defect.rest.reject.utils import sync_reject
 from services.forecast.models.forecast import Forecast
 from services.forecast.rest.forecast.serializers import ForecastSerializer
 from services.verification.models.qc_line_verification import QCLineVerification
@@ -70,10 +71,31 @@ class BaseQCLineVerificationSerializer(BaseModelSerializer):
     def create(self, validated_data):
         forecast = validated_data.pop("forecast")
 
-        return QCLineVerification.objects.create(
+        verification = QCLineVerification.objects.create(
             forecast=forecast,
             **validated_data,
         )
+        
+        sync_reject(
+            verification=verification,
+            qty=verification.rejected_quantity,
+            note=verification.defect_note,
+            user=self.context["request"].user,
+        )
+
+        return verification
+        
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+
+        sync_reject(
+            verification=instance,
+            qty=instance.rejected_quantity,
+            note=instance.defect_note,
+            user=self.context["request"].user,
+        )
+
+        return instance
 
 
 class QCLineVerificationSerializer(ForecastSerializer):
