@@ -120,4 +120,4 @@ class QCCuttingVerification(get_subid_model()):
 
     def __str__(self):
         status = "PASS" if self.is_approved else "REJECT"
-        return f"QC Cutting {self.forecast.id} - {status}"
+        return f"QC Cutting for forecast {self.forecast.id}: {status}"
