@@ -72,7 +72,7 @@ class QueueEntrySerializer(BaseModelSerializer):
         return data
     
     def get_type(self, obj):
-        return "Konveksi" if obj.deposit else "Marketplace"
+        return "Konveksi" if obj.order_item else "Marketplace"
     
     def get_priority_status(self, obj):
         ps = None
