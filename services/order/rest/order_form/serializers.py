@@ -264,6 +264,7 @@ class OrderFormSerializer(BaseModelSerializer):
                 order=order_form.order,
                 defaults={
                     "forecast": None,
+                    "deposit": None,
                     "created_by": self.context["request"].user,
                 },
             )
@@ -272,6 +273,7 @@ class OrderFormSerializer(BaseModelSerializer):
                 order_item=order_form.order_item,
                 defaults={
                     "forecast": None,
+                    "deposit": order_form.deposit,
                     "created_by": self.context["request"].user,
                 },
             )
