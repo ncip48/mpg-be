@@ -259,24 +259,24 @@ class OrderFormSerializer(BaseModelSerializer):
         for detail in details_data:
             OrderFormDetail.objects.create(order_form=order_form, **detail)
         
-        if order_form.order:
-            QueueEntry.objects.update_or_create(
-                order=order_form.order,
-                defaults={
-                    "forecast": None,
-                    "deposit": None,
-                    "created_by": self.context["request"].user,
-                },
-            )
-        else:
-            QueueEntry.objects.update_or_create(
-                order_item=order_form.order_item,
-                defaults={
-                    "forecast": None,
-                    "deposit": order_form.deposit,
-                    "created_by": self.context["request"].user,
-                },
-            )
+        # if order_form.order:
+        #     QueueEntry.objects.update_or_create(
+        #         order=order_form.order,
+        #         defaults={
+        #             "forecast": None,
+        #             "deposit": None,
+        #             "created_by": self.context["request"].user,
+        #         },
+        #     )
+        # else:
+        #     QueueEntry.objects.update_or_create(
+        #         order_item=order_form.order_item,
+        #         defaults={
+        #             "forecast": None,
+        #             "deposit": order_form.deposit,
+        #             "created_by": self.context["request"].user,
+        #         },
+        #     )
 
         return order_form
 
