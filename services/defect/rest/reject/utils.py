@@ -13,6 +13,10 @@ def sync_reject(verification, qty, note, user):
 
     # Rules 1 & 2
     if verification.is_approved:
+        
+        verification.error_from = None
+        verification.save(update_fields=["error_from"])
+        
         if reject:
             reject.delete()
         return
